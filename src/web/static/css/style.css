@@ -1,0 +1,36 @@
+#gallery {
+    column-count: auto;
+    column-gap: 5px;
+    column-width: 200px
+}
+
+#gallery img {
+    width: 100%;
+    display: block;
+    margin-bottom: 5px;
+    break-inside: avoid;
+}
+
+#lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1000;
+}
+
+#lightbox-img {
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+}
+
+#lightbox-caption {
+    position: absolute;
+    bottom: 20px;
+    color: white;
+    text-align: center;
+}
