@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="/utils.js"> </script>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <h1>Gallery</h1>
+    <div id="gallery"></div>
+    <div id="lightbox" style="display:none;">
+        <img id="lightbox-img">
+        <div id="lightbox-caption">
+            <p id="lightbox-title"></p>
+            <p id="lightbox-date"></p>
+        </div>
+    </div>
+    <script>
+        initGallery();
+        initLightbox();
+        loadImages();
+    </script>
+</body>
+</html>
