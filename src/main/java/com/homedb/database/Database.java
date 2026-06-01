@@ -12,7 +12,7 @@ import java.sql.Statement;
 
 public class Database {
 
-    private static final Path FILE = Path.of("database.db");
+    private static final Path FILE = Path.of("database/index.db");
 
     private final Connection conn;
 

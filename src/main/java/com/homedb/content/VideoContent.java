@@ -1,4 +1,4 @@
-package com.homedb;
+package com.homedb.content;
 
 import java.nio.file.Path;
 
@@ -6,8 +6,8 @@ import com.homedb.metadata.ContentMetaData;
 
 public class VideoContent extends AbstractContent {
 
-    public VideoContent(Path path, ContentMetaData metaData) {
-        super(path, metaData);
+    public VideoContent(String id, Path path, ContentMetaData metaData) {
+        super(id, path, metaData);
     }
     
 }

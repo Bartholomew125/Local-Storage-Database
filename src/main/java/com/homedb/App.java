@@ -7,6 +7,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
+import com.homedb.content.Content;
+import com.homedb.content.ContentInputReader;
+import com.homedb.content.ContentWriter;
+import com.homedb.content.ImageContent;
 import com.homedb.database.Database;
 import com.homedb.database.ImagesTable;
 import com.homedb.database.VideosTable;
@@ -17,15 +21,13 @@ public class App {
         Database db = new Database();
         ImagesTable imagesTable = new ImagesTable(db);
         VideosTable videosTable = new VideosTable(db);
-        Stream<Content> content = ContentInputReader.getContent(Path.of("Google Fotos"));
+        Stream<Content> content = ContentInputReader.getContent(Path.of("input"));
         content.forEach( c -> {
+            ContentWriter.write(c);
             if (ImageContent.class.isInstance(c)) {
                 ImageContent image = (ImageContent) c;
-                imagesTable.insert(image);
-            }
-            else if (VideoContent.class.isInstance(c)) {
-                VideoContent video = (VideoContent) c;
-                videosTable.insert(video);
+                int res = imagesTable.insert(image);
+                System.out.println("Inserted "+res+" rows");
             }
         });
     }

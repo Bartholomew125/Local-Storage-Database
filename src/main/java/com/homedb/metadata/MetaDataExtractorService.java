@@ -21,6 +21,7 @@ public class MetaDataExtractorService extends AbstractMetaDataExtractor {
     public ContentMetaData extract() {
         ContentMetaDataBuilder builder = new ContentMetaDataBuilder();
         extractors.forEach( extractor -> {
+            extractor.setFile(this.getFile());
             ContentMetaData subMetaData = extractor.extract();
             builder.append(subMetaData);
         });

@@ -1,26 +1,23 @@
 package com.homedb.metadata;
 
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Comparator;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.homedb.GeoLocation;
-import com.homedb.RegEx;
 
 
 public class GoogleMetaDataExtractor extends AbstractMetaDataExtractor {
 
     public GoogleMetaDataExtractor(Path file) {
         super(file);
+    }
+
+    public GoogleMetaDataExtractor() {
+        super();
     }
 
     @Override
@@ -44,9 +41,8 @@ public class GoogleMetaDataExtractor extends AbstractMetaDataExtractor {
 
         metaData.title = metaJson.getString("title");
         metaData.description = metaJson.getString("description");
-        metaData.imageViews = metaJson.getInt("imageViews");
-        metaData.creationTime = metaJson.getJSONObject("creationTime").getLong("timestamp");
-        metaData.photoTakenTime = metaJson.getJSONObject("photoTakenTime").getLong("timestamp");
+        metaData.views = metaJson.getInt("imageViews");
+        metaData.takenAt = metaJson.getJSONObject("photoTakenTime").getLong("timestamp");
 
         JSONObject geoDataJson = metaJson.getJSONObject("geoData");
         metaData.geoData = new GeoLocation(
@@ -56,21 +52,7 @@ public class GoogleMetaDataExtractor extends AbstractMetaDataExtractor {
                 geoDataJson.getFloat("latitudeSpan"), 
                 geoDataJson.getFloat("longitudeSpan")
         );
-
-        // Try to get geoDataExif. Not all files have it.
-        try {
-            JSONObject geoDataExifJson = metaJson.getJSONObject("geoDataExif");
-            metaData.geoDataExif = new GeoLocation(
-                    geoDataExifJson.getFloat("latitude"), 
-                    geoDataExifJson.getFloat("longitude"), 
-                    geoDataExifJson.getFloat("altitude"), 
-                    geoDataExifJson.getFloat("latitudeSpan"), 
-                    geoDataExifJson.getFloat("longitudeSpan")
-            );
-        } catch (JSONException ignored) {}
-
         return metaData;
-
     }
 
     public static Path findMetaFile(Path file) {

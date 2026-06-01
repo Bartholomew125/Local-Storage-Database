@@ -10,27 +10,23 @@ public class ContentMetaData {
 
     public String title;
     public String description;
-    public int imageViews;
-    public long creationTime;
-    public long photoTakenTime;
-    public GeoLocation geoData;
-    public GeoLocation geoDataExif;
-    public float length;
+    public long takenAt;
     public int width;
     public int height;
+    public float length;
     public MimeType mimeType;
+    public int views;
+    public GeoLocation geoData;
 
     public ContentMetaData() {
         this.title          = "";
         this.description    = "";
-        this.imageViews     = 0;
-        this.creationTime   = 0;
-        this.photoTakenTime = 0;
-        this.geoData        = null;
-        this.geoDataExif    = null;
+        this.takenAt = 0;
         this.width          = 0;
         this.height         = 0;
         this.mimeType       = null;
+        this.views     = 0;
+        this.geoData        = null;
     }
 
     public boolean isValid() {
@@ -43,15 +39,13 @@ public class ContentMetaData {
         return Stream.of(
                 this.title,
                 this.description,
-                this.imageViews,
-                this.creationTime,
-                this.photoTakenTime,
-                this.geoData,
-                this.geoDataExif,
-                this.length,
+                this.takenAt,
                 this.width,
                 this.height,
-                this.mimeType
+                this.length,
+                this.mimeType,
+                this.views,
+                this.geoData
             )
             .map(String::valueOf)
             .map(c -> "(" + c + ")")

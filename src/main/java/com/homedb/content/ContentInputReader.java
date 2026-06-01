@@ -1,4 +1,4 @@
-package com.homedb;
+package com.homedb.content;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -6,9 +6,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
+import com.homedb.RegEx;
 import com.homedb.metadata.ContentMetaData;
 import com.homedb.metadata.ExifMetaDataExtractor;
 import com.homedb.metadata.GoogleMetaDataExtractor;
@@ -20,7 +20,7 @@ public class ContentInputReader {
         Stream<Content> content = Stream.empty();
         Map<String, Integer> files = new ConcurrentHashMap<>();
         try {
-            content = Files.walk(Paths.get("Google Fotos"))
+            content = Files.walk(Paths.get("input"))
                 .parallel()
                 .filter( Files::isRegularFile )
                 .filter( f -> f.toString().matches(RegEx.contentFileRegEx) )
@@ -28,7 +28,6 @@ public class ContentInputReader {
                     // Source - https://stackoverflow.com/a/3571239
                     // Posted by EboMike, modified by community. See post 'Timeline' for change history
                     // Retrieved 2026-05-24, License - CC BY-SA 3.0
-                    
                     String extension = "";
                     int i = file.toString().lastIndexOf('.');
                     if (i > 0) {
@@ -38,18 +37,23 @@ public class ContentInputReader {
                     System.out.println(files);
 
                     MetaDataExtractorService service = new MetaDataExtractorService(file);
-                    service.addExtractor(new ExifMetaDataExtractor(file));
-                    service.addExtractor(new GoogleMetaDataExtractor(file));
+                    service.addExtractor(new ExifMetaDataExtractor());
+                    service.addExtractor(new GoogleMetaDataExtractor());
                     ContentMetaData metaData = service.extract();
-                    if (metaData.photoTakenTime == 0) {
+
+                    String id = "";
+                    try {
+                        id = VideoContent.generateId(file);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.exit(1);
                     }
-                    else {
-                    }
+
                     if (metaData.mimeType.isVideo()) {
-                        return new VideoContent(file, metaData);
+                        return new VideoContent(id, file, metaData);
                     }
                     else {
-                        return new ImageContent(file, metaData);
+                        return new ImageContent(id, file, metaData);
                     }
                 });
             
@@ -57,6 +61,5 @@ public class ContentInputReader {
             e.printStackTrace();
         }
         return content;
-
     }
 }

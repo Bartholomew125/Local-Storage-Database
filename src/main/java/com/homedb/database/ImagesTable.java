@@ -1,38 +1,21 @@
 package com.homedb.database;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.sql.Blob;
-import java.sql.Connection;
+import java.nio.file.Path;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import com.homedb.ImageContent;
+import com.homedb.content.ImageContent;
+import com.homedb.GeoLocation;
 import com.homedb.MimeType;
 import com.homedb.metadata.ContentMetaData;
 
 public class ImagesTable extends AbstractTable<ImageContent> {
 
-    public static final String COLUMN_ID         = "id";
-    public static final String COLUMN_TITLE      = "title";
-    public static final String COLUMN_TAKEN_AT   = "taken_at";
-    public static final String COLUMN_IMAGE_DATA = "image_data";
-    public static final String COLUMN_WIDTH      = "width";
-    public static final String COLUMN_HEIGHT     = "height";
-    public static final String COLUMN_THUMBNAIL  = "thumbnail";
-    public static final String COLUMN_MIMETYPE   = "mimetype";
-    public static final List<String> COLUMNS = List.of(
-        COLUMN_ID, COLUMN_TITLE, COLUMN_TAKEN_AT, COLUMN_IMAGE_DATA,
-        COLUMN_WIDTH, COLUMN_HEIGHT, COLUMN_THUMBNAIL, COLUMN_MIMETYPE);
-    public static final int COLUMN_COUNT = COLUMNS.size();
-
     private static final String INSERT_SQL = 
-        "INSERT INTO images (id, title, taken_at, image_data, width, height, thumbnail, mimetype) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        "INSERT INTO images (id, title, taken_at, path, width, height, mimetype, views, latitude, latitudeSpan, longitude, longitudeSpan, altitude) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     private static final String SELECT_SQL = 
         "SELECT * FROM images WHERE id=?";
@@ -49,12 +32,17 @@ public class ImagesTable extends AbstractTable<ImageContent> {
         try(PreparedStatement stmt = this.createPreparedStatement(INSERT_SQL)) {
             stmt.setString(1, item.getId());
             stmt.setString(2, item.getMetaData().title);
-            stmt.setLong  (3, item.getMetaData().photoTakenTime);
-            stmt.setBytes (4, item.getData());
+            stmt.setLong  (3, item.getMetaData().takenAt);
+            stmt.setString(4, item.getPath().toString());
             stmt.setInt   (5, item.getMetaData().width);
             stmt.setInt   (6, item.getMetaData().height);
-            stmt.setBytes (7, item.getThumbnail());
-            stmt.setString(8, item.getMetaData().mimeType.toString());
+            stmt.setString(7, item.getMetaData().mimeType.toString());
+            stmt.setInt   (8, item.getMetaData().views);
+            stmt.setFloat (9, item.getMetaData().geoData.latitude());
+            stmt.setFloat (10, item.getMetaData().geoData.latitudeSpan());
+            stmt.setFloat (11, item.getMetaData().geoData.longitude());
+            stmt.setFloat (12, item.getMetaData().geoData.longitudeSpan());
+            stmt.setFloat (13, item.getMetaData().geoData.altitude());
             return stmt.executeUpdate();
         } catch (SQLException e) {
             if (e.getMessage().toString().startsWith("[SQLITE_CONSTRAINT_PRIMARYKEY]")) {
@@ -83,13 +71,20 @@ public class ImagesTable extends AbstractTable<ImageContent> {
             if (res.next()) {
                 ContentMetaData metaData = new ContentMetaData();
                 metaData.title = res.getString("title");
-                metaData.photoTakenTime = res.getDate("taken_at").getTime();
+                metaData.takenAt = res.getDate("taken_at").getTime();
                 metaData.width = res.getInt("width");
                 metaData.height = res.getInt("height");
                 metaData.mimeType = MimeType.of(res.getString("mimetype"));
-                byte[] data = res.getBytes("image_data");
-                byte[] thumbnail = res.getBytes("thumbnail");
-                ImageContent image = new ImageContent(itemID, data, thumbnail, metaData);
+                metaData.views = res.getInt("views");
+                metaData.geoData = new GeoLocation(
+                    res.getFloat("latitude"),
+                    res.getFloat("longitude"),
+                    res.getFloat("altitude"),
+                    res.getFloat("latitudeSpan"),
+                    res.getFloat("longitudeSpan")
+                );
+                Path path = Path.of(res.getString("path"));
+                ImageContent image = new ImageContent(itemID, path, metaData);
                 return image;
             }
             else {
@@ -102,8 +97,8 @@ public class ImagesTable extends AbstractTable<ImageContent> {
     }
 
     @Override
-    public List<ImageContent> select(int limit, int offset, String sortBy) {
-        List<ImageContent> images = new ArrayList<>();
+    public Set<ImageContent> select(int limit, int offset, String sortBy) {
+        Set<ImageContent> images = new HashSet<>();
         String sql = SELECT_ALL_SQL.formatted(sortBy);
         try(PreparedStatement stmt = this.createPreparedStatement(sql)) {
             stmt.setInt(1, limit);
@@ -112,14 +107,13 @@ public class ImagesTable extends AbstractTable<ImageContent> {
             while (res.next()) {
                 ContentMetaData metaData = new ContentMetaData();
                 metaData.title = res.getString("title");
-                metaData.photoTakenTime = res.getDate("taken_at").getTime();
+                metaData.takenAt = res.getDate("taken_at").getTime();
                 metaData.width = res.getInt("width");
                 metaData.height = res.getInt("height");
                 metaData.mimeType = MimeType.of(res.getString("mimetype"));
-                byte[] data = res.getBytes("image_data");
-                byte[] thumbnail = res.getBytes("thumbnail");
                 String id = res.getString("id");
-                ImageContent image = new ImageContent(id, data, thumbnail, metaData);
+                Path path = Path.of(res.getString("path"));
+                ImageContent image = new ImageContent(id, path, metaData);
                 images.add(image);
             }
             return images;

@@ -1,12 +1,17 @@
 CREATE TABLE images (
-    id          CHAR(40)        NOT NULL,
-    title       VARCHAR(256),
-    taken_at    DATETIME,
-    image_data  BLOB            NOT NULL,
-    width       INTEGER         NOT NULL,
-    height      INTEGER         NOT NULL,
-    thumbnail   BLOB            NOT NULL,
-    mimetype    VARCHAR(64),
+    id              CHAR(40)        NOT NULL,
+    title           VARCHAR(256),
+    taken_at        DATETIME,
+    path            VARCHAR(1024)   NOT NULL,
+    width           INTEGER         NOT NULL,
+    height          INTEGER         NOT NULL,
+    mimetype        VARCHAR(64),
+    views           INTEGER         NOT NULL,
+    latitude        FLOAT,
+    latitudeSpan    Float,
+    longitude       FLOAT,
+    longitudeSpan   FLOAT,
+    altitude        FLOAT,
     PRIMARY KEY(id)
 );
 

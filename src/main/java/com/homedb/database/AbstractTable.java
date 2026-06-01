@@ -1,7 +1,6 @@
 package com.homedb.database;
 
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public abstract class AbstractTable<T> implements Table<T> {

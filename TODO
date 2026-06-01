@@ -1,0 +1,2 @@
+Store thumbnails, images and index.db in XDG_DATA_DIRS.
+Make sure that the pictures are not random in the web viewer

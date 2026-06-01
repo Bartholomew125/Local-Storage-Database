@@ -6,7 +6,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
 
-import com.homedb.VideoContent;
+import com.homedb.content.VideoContent;
 
 public class VideosTable extends AbstractTable<VideoContent> {
 
@@ -38,12 +38,10 @@ public class VideosTable extends AbstractTable<VideoContent> {
             PreparedStatement stmt = this.createPreparedStatement(INSERT_SQL);
             stmt.setString(1, item.getId());
             stmt.setString(2, item.getMetaData().title);
-            stmt.setLong  (3, item.getMetaData().photoTakenTime);
+            stmt.setLong  (3, item.getMetaData().takenAt);
             stmt.setFloat (4, item.getMetaData().length);
-            stmt.setBytes (5, item.getData());
             stmt.setInt   (6, item.getMetaData().width);
             stmt.setInt   (7, item.getMetaData().height);
-            stmt.setBytes (8, item.getThumbnail());
             stmt.setString(9, item.getMetaData().mimeType.toString());
             return stmt.executeUpdate();
         } catch (SQLException e) {
@@ -72,7 +70,7 @@ public class VideosTable extends AbstractTable<VideoContent> {
     }
 
     @Override
-    public List<VideoContent> select(int limit, int offset, String sortBy) {
+    public Set<VideoContent> select(int limit, int offset, String sortBy) {
         // TODO Auto-generated method stub
         return null;
     }

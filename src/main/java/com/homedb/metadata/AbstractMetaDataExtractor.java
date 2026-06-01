@@ -10,10 +10,16 @@ public abstract class AbstractMetaDataExtractor implements MetaDataExtractor {
         this.file = file;
     }
 
+    protected AbstractMetaDataExtractor() {
+        this.file = null;
+    }
+
+    @Override
     public Path getFile() {
         return this.file;
     }
 
+    @Override
     public void setFile(Path file) {
         this.file = file;
     }

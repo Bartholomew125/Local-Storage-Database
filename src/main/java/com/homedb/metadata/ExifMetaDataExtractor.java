@@ -3,22 +3,21 @@ package com.homedb.metadata;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
-import java.util.stream.StreamSupport;
 
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.Tag;
-import com.drew.metadata.jpeg.JpegDirectory;
-import com.drew.metadata.mp4.media.Mp4VideoDirectory;
-import com.drew.metadata.png.PngDirectory;
 import com.homedb.MimeType;
-import com.homedb.PathComparator;
 
 public class ExifMetaDataExtractor extends AbstractMetaDataExtractor {
 
     public ExifMetaDataExtractor(Path file) {
         super(file);
+    }
+
+    public ExifMetaDataExtractor() {
+        super();
     }
 
     private static <T> Optional<T> findFirstTag(Metadata metadata, String tagName, Class<T> type) {

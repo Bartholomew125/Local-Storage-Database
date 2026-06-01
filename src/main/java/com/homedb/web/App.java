@@ -1,9 +1,9 @@
 package com.homedb.web;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import com.homedb.ImageContent;
+import com.homedb.content.ImageContent;
 import com.homedb.database.Database;
 import com.homedb.database.ImagesTable;
 import com.homedb.database.Table;
@@ -11,6 +11,9 @@ import com.homedb.database.Table;
 import io.javalin.Javalin;
 
 public class App {
+
+    private static final int PORT = 8080;
+
     public static void main(String[] args) {
 
         Database database = new Database();
@@ -18,7 +21,7 @@ public class App {
 
         Javalin app = Javalin.create(config -> {
             config.staticFiles.add("/public");  // matches resources/public
-        }).start(8080);
+        }).start(PORT);
 
         // Your API routes sit alongside the static files
         app.get("/api/hello", ctx -> ctx.json(Map.of("message", "Hello!")));
@@ -28,13 +31,13 @@ public class App {
             int limit  = 20;
             int offset = page * limit;
 
-            List<ImageContent> images = imagesTable.select(limit, offset, "taken_at");
+            Set<ImageContent> images = imagesTable.select(limit, offset, "taken_at");
 
             ctx.json(images.stream()
                     .map(img -> Map.of(
                         "id",       img.getId(),
                         "title",    img.getMetaData().title,
-                        "taken_at", img.getMetaData().photoTakenTime,
+                        "taken_at", img.getMetaData().takenAt,
                         "width",    img.getMetaData().width,
                         "height",   img.getMetaData().height
             )).toList());
@@ -44,7 +47,7 @@ public class App {
             String imageid = ctx.pathParam("id");
             ImageContent image = imagesTable.select(imageid);
             if (image != null) {
-                ctx.result(image.getData());
+                ctx.result(image.readFile());
             }
         });
 
@@ -52,7 +55,7 @@ public class App {
             String imageid = ctx.pathParam("id");
             ImageContent image = imagesTable.select(imageid);
             if (image != null) {
-                ctx.result(image.getThumbnail());
+                ctx.result(image.readThumbnailFile());
             }
         });
 

@@ -18,16 +18,12 @@ public class ContentMetaDataBuilder {
                 this.contentMetaData.title = newContentMetaData.title;
             if (this.contentMetaData.description == "")
                 this.contentMetaData.description = newContentMetaData.description;
-            if (this.contentMetaData.imageViews == 0) 
-                this.contentMetaData.imageViews = newContentMetaData.imageViews;
-            if (this.contentMetaData.creationTime == 0)
-                this.contentMetaData.creationTime = newContentMetaData.creationTime;
-            if (this.contentMetaData.photoTakenTime == 0)
-                this.contentMetaData.photoTakenTime = newContentMetaData.photoTakenTime;
+            if (this.contentMetaData.views == 0) 
+                this.contentMetaData.views = newContentMetaData.views;
+            if (this.contentMetaData.takenAt == 0)
+                this.contentMetaData.takenAt = newContentMetaData.takenAt;
             if (this.contentMetaData.geoData == null)
                 this.contentMetaData.geoData = newContentMetaData.geoData;
-            if (this.contentMetaData.geoDataExif == null)
-                this.contentMetaData.geoDataExif = newContentMetaData.geoDataExif;
             if (this.contentMetaData.width == 0)
                 this.contentMetaData.width = newContentMetaData.width;
             if (this.contentMetaData.height == 0)
