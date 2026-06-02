@@ -1,5 +1,6 @@
 package com.homedb.database;
 
+import java.util.List;
 import java.util.Set;
 
 public interface Table<T> {
@@ -7,5 +8,5 @@ public interface Table<T> {
     public int insert(T item);
     public int insert(Set<T> items);
     public T select(String itemID);
-    public Set<T> select(int limit, int offset, String sortBy);
+    public List<T> select(int limit, int offset, String sortBy);
 }

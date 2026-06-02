@@ -31,7 +31,7 @@ public class App {
             int limit  = 20;
             int offset = page * limit;
 
-            Set<ImageContent> images = imagesTable.select(limit, offset, "taken_at");
+            List<ImageContent> images = imagesTable.select(limit, offset, "taken_at");
 
             ctx.json(images.stream()
                     .map(img -> Map.of(

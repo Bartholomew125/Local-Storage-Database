@@ -4,7 +4,9 @@ import java.nio.file.Path;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.homedb.content.ImageContent;
@@ -97,8 +99,8 @@ public class ImagesTable extends AbstractTable<ImageContent> {
     }
 
     @Override
-    public Set<ImageContent> select(int limit, int offset, String sortBy) {
-        Set<ImageContent> images = new HashSet<>();
+    public List<ImageContent> select(int limit, int offset, String sortBy) {
+        List<ImageContent> images = new ArrayList<>();
         String sql = SELECT_ALL_SQL.formatted(sortBy);
         try(PreparedStatement stmt = this.createPreparedStatement(sql)) {
             stmt.setInt(1, limit);

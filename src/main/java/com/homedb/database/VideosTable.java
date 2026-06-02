@@ -70,7 +70,7 @@ public class VideosTable extends AbstractTable<VideoContent> {
     }
 
     @Override
-    public Set<VideoContent> select(int limit, int offset, String sortBy) {
+    public List<VideoContent> select(int limit, int offset, String sortBy) {
         // TODO Auto-generated method stub
         return null;
     }
