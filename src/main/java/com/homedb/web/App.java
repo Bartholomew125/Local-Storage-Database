@@ -1,8 +1,10 @@
 package com.homedb.web;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
+import com.homedb.MyDate;
 import com.homedb.content.ImageContent;
 import com.homedb.database.Database;
 import com.homedb.database.ImagesTable;
@@ -37,7 +39,7 @@ public class App {
                     .map(img -> Map.of(
                         "id",       img.getId(),
                         "title",    img.getMetaData().title,
-                        "taken_at", img.getMetaData().takenAt,
+                        "taken_at", new MyDate(img.getMetaData().takenAt, TimeUnit.SECONDS).toString(),
                         "width",    img.getMetaData().width,
                         "height",   img.getMetaData().height
             )).toList());

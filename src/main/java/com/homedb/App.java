@@ -27,7 +27,6 @@ public class App {
             if (ImageContent.class.isInstance(c)) {
                 ImageContent image = (ImageContent) c;
                 int res = imagesTable.insert(image);
-                System.out.println("Inserted "+res+" rows");
             }
         });
     }
