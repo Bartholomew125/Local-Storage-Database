@@ -13,20 +13,21 @@ public class ContentMetaData {
     public long takenAt;
     public int width;
     public int height;
-    public float length;
+    public float duration;
     public MimeType mimeType;
     public int views;
     public GeoLocation geoData;
 
     public ContentMetaData() {
-        this.title          = "";
-        this.description    = "";
-        this.takenAt = 0;
-        this.width          = 0;
-        this.height         = 0;
-        this.mimeType       = null;
-        this.views     = 0;
-        this.geoData        = null;
+        this.title       = "";
+        this.description = "";
+        this.takenAt     = 0;
+        this.width       = 0;
+        this.height      = 0;
+        this.duration    = 0;
+        this.mimeType    = null;
+        this.views       = 0;
+        this.geoData     = null;
     }
 
     public boolean isValid() {
@@ -42,7 +43,7 @@ public class ContentMetaData {
                 this.takenAt,
                 this.width,
                 this.height,
-                this.length,
+                this.duration,
                 this.mimeType,
                 this.views,
                 this.geoData

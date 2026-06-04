@@ -4,5 +4,5 @@ import java.nio.file.Path;
 
 public class Config {
 
-    public static final Path DATA_DIR = Path.of("database");
+    public static final Path DATA_DIR = Path.of("data");
 }

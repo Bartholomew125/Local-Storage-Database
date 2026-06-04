@@ -1,48 +1,56 @@
 package com.homedb.database;
 
+import java.nio.file.Path;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import com.homedb.GeoLocation;
+import com.homedb.MimeType;
 import com.homedb.content.VideoContent;
+import com.homedb.metadata.ContentMetaData;
 
 public class VideosTable extends AbstractTable<VideoContent> {
 
-    public static final String COLUMN_ID         = "id";
-    public static final String COLUMN_TITLE      = "title";
-    public static final String COLUMN_TAKEN_AT   = "taken_at";
-    public static final String COLUMN_DURATION   = "duration";
-    public static final String COLUMN_VIDEO_DATA = "video_data";
-    public static final String COLUMN_WIDTH      = "width";
-    public static final String COLUMN_HEIGHT     = "height";
-    public static final String COLUMN_THUMBNAIL  = "thumbnail";
-    public static final String COLUMN_MIMETYPE   = "mimetype";
-    public static final List<String> COLUMNS = List.of(
-        COLUMN_ID, COLUMN_TITLE, COLUMN_TAKEN_AT, COLUMN_DURATION, 
-        COLUMN_VIDEO_DATA, COLUMN_WIDTH, COLUMN_HEIGHT, 
-        COLUMN_THUMBNAIL, COLUMN_MIMETYPE);
-    public static final int COLUMN_COUNT = COLUMNS.size();
-
-    private static final String INSERT_SQL = 
-        "INSERT INTO videos (id, title, taken_at, duration, video_data, width, height, thumbnail, mimetype) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
     public VideosTable(Database database) {
-        super(database, "videos");
+        super(database, "videos", List.of(
+            "id", 
+            "title", 
+            "taken_at", 
+            "path", 
+            "width", 
+            "height", 
+            "duration",
+            "mimetype", 
+            "views", 
+            "latitude", 
+            "latitudeSpan", 
+            "longitude", 
+            "longitudeSpan", 
+            "altitude"
+        ));
     }
 
     @Override
     public int insert(VideoContent item) {
-        try {
-            PreparedStatement stmt = this.createPreparedStatement(INSERT_SQL);
+        try(PreparedStatement stmt = this.createPreparedStatement(this.INSERT_SQL)) {
             stmt.setString(1, item.getId());
             stmt.setString(2, item.getMetaData().title);
             stmt.setLong  (3, item.getMetaData().takenAt);
-            stmt.setFloat (4, item.getMetaData().length);
-            stmt.setInt   (6, item.getMetaData().width);
-            stmt.setInt   (7, item.getMetaData().height);
-            stmt.setString(9, item.getMetaData().mimeType.toString());
+            stmt.setString(4, item.getPath().toString());
+            stmt.setInt   (5, item.getMetaData().width);
+            stmt.setInt   (6, item.getMetaData().height);
+            stmt.setFloat (7, item.getMetaData().duration);
+            stmt.setString(8, item.getMetaData().mimeType.toString());
+            stmt.setInt   (9, item.getMetaData().views);
+            stmt.setFloat (10, item.getMetaData().geoData.latitude());
+            stmt.setFloat (11, item.getMetaData().geoData.latitudeSpan());
+            stmt.setFloat (12, item.getMetaData().geoData.longitude());
+            stmt.setFloat (13, item.getMetaData().geoData.longitudeSpan());
+            stmt.setFloat (14, item.getMetaData().geoData.altitude());
             return stmt.executeUpdate();
         } catch (SQLException e) {
             if (e.getMessage().toString().startsWith("[SQLITE_CONSTRAINT_PRIMARYKEY]")) {
@@ -58,27 +66,103 @@ public class VideosTable extends AbstractTable<VideoContent> {
 
     @Override
     public int insert(Set<VideoContent> items) {
-        return items.stream()
-            .map(item -> this.insert(item))
-            .reduce(0, (a,b) -> a+b);
+        String INSERT_ALL_SQL = "INSERT INTO "+this.tableName+" VALUES ";
+        List<String> placeholders = new ArrayList<>();
+        for (int i = 0; i < items.size(); i++) placeholders.add(this.INSERT_SQL_PLACEHOLDER);
+        INSERT_ALL_SQL = INSERT_ALL_SQL.concat(String.join(", ", placeholders));
+
+        try(PreparedStatement stmt = this.createPreparedStatement(INSERT_ALL_SQL)) {
+            int i = 0;
+            for (VideoContent item : items) {
+                stmt.setString(i+1, item.getId());
+                stmt.setString(i+2, item.getMetaData().title);
+                stmt.setLong  (i+3, item.getMetaData().takenAt);
+                stmt.setString(i+4, item.getPath().toString());
+                stmt.setInt   (i+5, item.getMetaData().width);
+                stmt.setInt   (i+6, item.getMetaData().height);
+                stmt.setFloat (i+7, item.getMetaData().duration);
+                stmt.setString(i+8, item.getMetaData().mimeType.toString());
+                stmt.setInt   (i+9, item.getMetaData().views);
+                stmt.setFloat (i+10, item.getMetaData().geoData.latitude());
+                stmt.setFloat (i+11, item.getMetaData().geoData.latitudeSpan());
+                stmt.setFloat (i+12, item.getMetaData().geoData.longitude());
+                stmt.setFloat (i+13, item.getMetaData().geoData.longitudeSpan());
+                stmt.setFloat (i+14, item.getMetaData().geoData.altitude());
+                i = i + this.columns.size();
+            }
+            return stmt.executeUpdate();
+        } catch (SQLException e) {
+            if (e.getMessage().toString().startsWith("[SQLITE_CONSTRAINT_PRIMARYKEY]")) {
+                System.out.println("DUPLICATE KEY, SKIPPING.");
+                return 0;
+            }
+            else {
+                e.printStackTrace();
+                throw new RuntimeException();
+            }
+        }
     }
 
     @Override
     public VideoContent select(String itemID) {
-        // TODO Auto-generated method stub
-        return null;
+        try(PreparedStatement stmt = this.createPreparedStatement(this.SELECT_SQL)) {
+            stmt.setString(1, itemID);
+            ResultSet res = stmt.executeQuery();
+            if (res.next()) {
+                ContentMetaData metaData = new ContentMetaData();
+                metaData.title = res.getString("title");
+                metaData.takenAt = res.getDate("taken_at").getTime();
+                metaData.width = res.getInt("width");
+                metaData.height = res.getInt("height");
+                metaData.duration = res.getFloat("duration");
+                metaData.mimeType = MimeType.of(res.getString("mimetype"));
+                metaData.views = res.getInt("views");
+                metaData.geoData = new GeoLocation(
+                    res.getFloat("latitude"),
+                    res.getFloat("longitude"),
+                    res.getFloat("altitude"),
+                    res.getFloat("latitudeSpan"),
+                    res.getFloat("longitudeSpan")
+                );
+                Path path = Path.of(res.getString("path"));
+                VideoContent video = new VideoContent(itemID, path, metaData);
+                return video;
+            }
+            else {
+                return null;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
     public List<VideoContent> select(int limit, int offset, String sortBy) {
-        // TODO Auto-generated method stub
-        return null;
+        List<VideoContent> videos = new ArrayList<>();
+        String sql = this.SELECT_ALL_SQL.formatted(sortBy);
+        try(PreparedStatement stmt = this.createPreparedStatement(sql)) {
+            stmt.setInt(1, limit);
+            stmt.setInt(2, offset);
+            ResultSet res = stmt.executeQuery();
+            while (res.next()) {
+                ContentMetaData metaData = new ContentMetaData();
+                metaData.title = res.getString("title");
+                metaData.takenAt = res.getDate("taken_at").getTime();
+                metaData.width = res.getInt("width");
+                metaData.height = res.getInt("height");
+                metaData.duration = res.getInt("duration");
+                metaData.mimeType = MimeType.of(res.getString("mimetype"));
+                String id = res.getString("id");
+                Path path = Path.of(res.getString("path"));
+                VideoContent video = new VideoContent(id, path, metaData);
+                videos.add(video);
+            }
+            return videos;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+
     }
-
-
-    // @Override
-    // public ResultSet select(List<Integer> columns, Set<Condition> conditions) {
-    //     // TODO Auto-generated method stub
-    //     return null;
-    // }
 }

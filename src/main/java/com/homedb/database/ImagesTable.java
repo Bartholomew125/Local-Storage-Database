@@ -5,7 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -16,22 +15,27 @@ import com.homedb.metadata.ContentMetaData;
 
 public class ImagesTable extends AbstractTable<ImageContent> {
 
-    private static final String INSERT_SQL = 
-        "INSERT INTO images (id, title, taken_at, path, width, height, mimetype, views, latitude, latitudeSpan, longitude, longitudeSpan, altitude) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-    private static final String SELECT_SQL = 
-        "SELECT * FROM images WHERE id=?";
-
-    private static final String SELECT_ALL_SQL = 
-        "SELECT * FROM images ORDER BY %s DESC NULLS LAST LIMIT ? OFFSET ?";
-
     public ImagesTable(Database database) {
-        super(database, "images");
+        super(database, "images", List.of(
+            "id", 
+            "title", 
+            "taken_at", 
+            "path", 
+            "width", 
+            "height", 
+            "mimetype", 
+            "views", 
+            "latitude", 
+            "latitudeSpan", 
+            "longitude", 
+            "longitudeSpan", 
+            "altitude"
+        ));
     }
 
     @Override
     public int insert(ImageContent item) {
-        try(PreparedStatement stmt = this.createPreparedStatement(INSERT_SQL)) {
+        try(PreparedStatement stmt = this.createPreparedStatement(this.INSERT_SQL)) {
             stmt.setString(1, item.getId());
             stmt.setString(2, item.getMetaData().title);
             stmt.setLong  (3, item.getMetaData().takenAt);
@@ -60,14 +64,45 @@ public class ImagesTable extends AbstractTable<ImageContent> {
 
     @Override
     public int insert(Set<ImageContent> items) {
-        return items.stream()
-            .map(item -> this.insert(item))
-            .reduce(0, (a,b) -> a+b);
+        String INSERT_ALL_SQL = "INSERT INTO "+this.tableName+" VALUES ";
+        List<String> placeholders = new ArrayList<>();
+        for (int i = 0; i < items.size(); i++) placeholders.add(this.INSERT_SQL_PLACEHOLDER);
+        INSERT_ALL_SQL = INSERT_ALL_SQL.concat(String.join(", ", placeholders));
+
+        try(PreparedStatement stmt = this.createPreparedStatement(INSERT_ALL_SQL)) {
+            int i = 0;
+            for (ImageContent item : items) {
+                stmt.setString(i+1, item.getId());
+                stmt.setString(i+2, item.getMetaData().title);
+                stmt.setLong  (i+3, item.getMetaData().takenAt);
+                stmt.setString(i+4, item.getPath().toString());
+                stmt.setInt   (i+5, item.getMetaData().width);
+                stmt.setInt   (i+6, item.getMetaData().height);
+                stmt.setString(i+7, item.getMetaData().mimeType.toString());
+                stmt.setInt   (i+8, item.getMetaData().views);
+                stmt.setFloat (i+9, item.getMetaData().geoData.latitude());
+                stmt.setFloat (i+10, item.getMetaData().geoData.latitudeSpan());
+                stmt.setFloat (i+11, item.getMetaData().geoData.longitude());
+                stmt.setFloat (i+12, item.getMetaData().geoData.longitudeSpan());
+                stmt.setFloat (i+13, item.getMetaData().geoData.altitude());
+                i = i + this.columns.size();
+            }
+            return stmt.executeUpdate();
+        } catch (SQLException e) {
+            if (e.getMessage().toString().startsWith("[SQLITE_CONSTRAINT_PRIMARYKEY]")) {
+                System.out.println("DUPLICATE KEY, SKIPPING.");
+                return 0;
+            }
+            else {
+                e.printStackTrace();
+                throw new RuntimeException();
+            }
+        }
     }
 
     @Override
     public ImageContent select(String itemID) {
-        try(PreparedStatement stmt = this.createPreparedStatement(SELECT_SQL)) {
+        try(PreparedStatement stmt = this.createPreparedStatement(this.SELECT_SQL)) {
             stmt.setString(1, itemID);
             ResultSet res = stmt.executeQuery();
             if (res.next()) {
@@ -101,7 +136,7 @@ public class ImagesTable extends AbstractTable<ImageContent> {
     @Override
     public List<ImageContent> select(int limit, int offset, String sortBy) {
         List<ImageContent> images = new ArrayList<>();
-        String sql = SELECT_ALL_SQL.formatted(sortBy);
+        String sql = this.SELECT_ALL_SQL.formatted(sortBy);
         try(PreparedStatement stmt = this.createPreparedStatement(sql)) {
             stmt.setInt(1, limit);
             stmt.setInt(2, offset);
@@ -123,7 +158,6 @@ public class ImagesTable extends AbstractTable<ImageContent> {
             e.printStackTrace();
             return null;
         }
-
     }
 
     // @Override

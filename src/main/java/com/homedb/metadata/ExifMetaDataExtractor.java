@@ -46,7 +46,7 @@ public class ExifMetaDataExtractor extends AbstractMetaDataExtractor {
 
             int width = 0;
             int height = 0;
-            float length = 0;
+            float duration = 0;
 
             MimeType mimeType = MimeType.of(
                 findFirstTag(metadata, "Detected MIME Type", String.class)
@@ -63,9 +63,9 @@ public class ExifMetaDataExtractor extends AbstractMetaDataExtractor {
                 case MP4:
                     width = findFirstTag(metadata, "Width", Integer.class).orElseThrow();
                     height = findFirstTag(metadata, "Height", Integer.class).orElseThrow();
-                    length = (float) findFirstTag(metadata, "Duration", Long.class).orElseThrow();
+                    duration = (float) findFirstTag(metadata, "Duration", Long.class).orElseThrow();
                     float mediaTimeScale = (float) findFirstTag(metadata, "Media Time Scale", Long.class).orElseThrow();
-                    length = length/mediaTimeScale;
+                    duration = duration/mediaTimeScale;
                     break;
                 default:
                     throw new RuntimeException("Unknown mime type: "+mimeType);
@@ -74,7 +74,7 @@ public class ExifMetaDataExtractor extends AbstractMetaDataExtractor {
             ContentMetaData contentMetaData = new ContentMetaData();
             contentMetaData.width = width;
             contentMetaData.height = height;
-            contentMetaData.length = length;
+            contentMetaData.duration= duration;
             contentMetaData.mimeType = mimeType;
             return contentMetaData;
 

@@ -28,6 +28,8 @@ public class ContentMetaDataBuilder {
                 this.contentMetaData.width = newContentMetaData.width;
             if (this.contentMetaData.height == 0)
                 this.contentMetaData.height = newContentMetaData.height;
+            if (this.contentMetaData.duration == 0)
+                this.contentMetaData.duration = newContentMetaData.duration;
             if (this.contentMetaData.mimeType == null)
                 this.contentMetaData.mimeType = newContentMetaData.mimeType;
         }

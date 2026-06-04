@@ -28,6 +28,12 @@
     object-fit: contain;
 }
 
+#lightbox-video {
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+}
+
 #lightbox-caption {
     position: absolute;
     bottom: 20px;

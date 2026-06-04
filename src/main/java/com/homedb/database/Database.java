@@ -10,9 +10,11 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import com.homedb.Config;
+
 public class Database {
 
-    private static final Path FILE = Path.of("database/index.db");
+    private static final Path FILE = Config.DATA_DIR.resolve("index.db");
 
     private final Connection conn;
 

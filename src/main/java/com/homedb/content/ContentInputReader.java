@@ -6,6 +6,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import com.homedb.RegEx;
@@ -15,6 +17,8 @@ import com.homedb.metadata.GoogleMetaDataExtractor;
 import com.homedb.metadata.MetaDataExtractorService;
 
 public class ContentInputReader {
+
+    // private static Logger logger = Logger.getGlobal();
 
     public static Stream<Content> getContent(Path root) {
         Stream<Content> content = Stream.empty();
@@ -28,6 +32,7 @@ public class ContentInputReader {
                     // Source - https://stackoverflow.com/a/3571239
                     // Posted by EboMike, modified by community. See post 'Timeline' for change history
                     // Retrieved 2026-05-24, License - CC BY-SA 3.0
+                    // logger.log(Level.INFO, "LOGGING: "+Thread.currentThread().getName());
                     String extension = "";
                     int i = file.toString().lastIndexOf('.');
                     if (i > 0) {
@@ -35,12 +40,16 @@ public class ContentInputReader {
                     }
                     files.merge(extension, 1, Integer::sum);
                     System.out.println(files);
-
+                    // logger.log(Level.INFO, "DONE LOGGING: "+Thread.currentThread().getName());
+                    
+                    // logger.log(Level.INFO, "EXTRACTING: "+Thread.currentThread().getName());
                     MetaDataExtractorService service = new MetaDataExtractorService(file);
                     service.addExtractor(new ExifMetaDataExtractor());
                     service.addExtractor(new GoogleMetaDataExtractor());
                     ContentMetaData metaData = service.extract();
+                    // logger.log(Level.INFO, "DONE EXTRACTING: "+Thread.currentThread().getName());
 
+                    // logger.log(Level.INFO, "GENERATING ID: "+Thread.currentThread().getName());
                     String id = "";
                     try {
                         id = VideoContent.generateId(file);
@@ -48,13 +57,18 @@ public class ContentInputReader {
                         e.printStackTrace();
                         System.exit(1);
                     }
+                    // logger.log(Level.INFO, "DONE GENERATING ID: "+Thread.currentThread().getName());
 
+                    // logger.log(Level.INFO, "CREATING CONTENT: "+Thread.currentThread().getName());
+                    Content c;
                     if (metaData.mimeType.isVideo()) {
-                        return new VideoContent(id, file, metaData);
+                        c = new VideoContent(id, file, metaData);
                     }
                     else {
-                        return new ImageContent(id, file, metaData);
+                        c = new ImageContent(id, file, metaData);
                     }
+                    // logger.log(Level.INFO, "DONE CREATING CONTENT: "+Thread.currentThread().getName());
+                    return c;
                 });
             
         } catch (IOException e) {
