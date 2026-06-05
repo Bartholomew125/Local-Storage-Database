@@ -52,7 +52,8 @@ public class App {
                         "taken_at", new MyDate(img.getMetaData().takenAt, TimeUnit.SECONDS).toString(),
                         "width",    img.getMetaData().width,
                         "height",   img.getMetaData().height,
-                        "duration", img.getMetaData().duration
+                        "duration", img.getMetaData().duration,
+                        "type",     img.getMetaData().mimeType.isVideo() ? "video" : "image"
             )).toList());
         });
 

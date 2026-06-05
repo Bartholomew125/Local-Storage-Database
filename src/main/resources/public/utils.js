@@ -40,44 +40,34 @@ function initGallery() {
     }
 }
 
-function addImageToGallery(image) {
-    const img = document.createElement("img");
-    img.dataset.src = `/api/images/${image.id}/thumbnail`;
-    img.alt = image.title || "untitled";
-    img.style = "width: 100%; display: block;";
-    img.addEventListener("click", () => openLightboxImage(image));
+function addContentToGallery(item) {
+    const container = document.createElement("div");
+    container.className = "thumbnail-container";
+    container.addEventListener("click", () => openLightbox(item));
 
-    const frac_height = image.height / image.width;
+    const thumbnail = document.createElement("img");
+    if (item.type == "video") {
+        thumbnail.dataset.src = `/api/videos/${item.id}/thumbnail`;
+    } else {
+        thumbnail.dataset.src = `/api/images/${item.id}/thumbnail`;
+    }
+    thumbnail.alt = item.title || "untitled";
+    thumbnail.style = "width: 100%; display: block;";
+    container.appendChild(thumbnail);
 
-    // Pick shortest column
+    if (item.type === "video") {
+        const play = document.createElement("div");
+        play.className = "play-button";
+        container.appendChild(play);
+    }
+
+    const frac_height = item.height / item.width;
     const shortest_idx = column_heights.indexOf(Math.min(...column_heights));
-    const shortest = columns[shortest_idx];
-    shortest.appendChild(img);
+    columns[shortest_idx].appendChild(container);
     column_heights[shortest_idx] += frac_height;
+    lazyObserver.observe(thumbnail);
 
-    lazyObserver.observe(img);
-
-    return img;
-}
-
-function addVideoToGallery(video) {
-    const vid = document.createElement("img");
-    vid.dataset.src = `/api/videos/${video.id}/thumbnail`;
-    // vid.alt = image.title || "untitled";
-    vid.style = "width: 100%; display: block;";
-    vid.addEventListener("click", () => openLightboxVideo(video));
-
-    const frac_height = video.height / video.width;
-
-    // Pick shortest column
-    const shortest_idx = column_heights.indexOf(Math.min(...column_heights));
-    const shortest = columns[shortest_idx];
-    shortest.appendChild(vid);
-    column_heights[shortest_idx] += frac_height;
-
-    lazyObserver.observe(vid);
-
-    return vid;
+    return container;
 }
 
 async function loadContent() {
@@ -90,13 +80,7 @@ async function loadContent() {
     // const gallery = document.getElementById("gallery");
 
     content.forEach( (c, i) => {
-        var cc;
-        if (c.duration > 0) {
-            cc = addVideoToGallery(c);
-        }
-        else {
-            cc = addImageToGallery(c);
-        }
+        const cc = addContentToGallery(c);
         if (i === content.length - 1) {
             pageObserver.observe(cc);
         }
@@ -106,52 +90,14 @@ async function loadContent() {
     loading = false;
 }
 
-async function loadImages() {
-    if (loading) return;
-    loading = true;
-    const res = await fetch(`/api/images?page=${page}`);
-    const images = await res.json();
-    if (images.length === 0) { loading = false; return; }
-
-    // const gallery = document.getElementById("gallery");
-
-    images.forEach( (image, i) => {
-        const img = addImageToGallery(image);
-        if (i === images.length - 1) {
-            pageObserver.observe(img);
-        }
-    });
-
-    page++;
-    loading = false;
-}
-
-async function loadVideos() {
-    if (loading) return;
-    loading = true;
-    const res = await fetch(`/api/videos?page=${page}`);
-    const videos = await res.json();
-    if (videos.length === 0) { loading = false; return; }
-
-    // const gallery = document.getElementById("gallery");
-
-    videos.forEach( (video, i) => {
-        const vid = addVideoToGallery(video);
-        if (i === videos.length - 1) {
-            pageObserver.observe(vid);
-        }
-    });
-
-    page++;
-    loading = false;
-}
-
 function initLightbox() {
     const lightbox = document.getElementById("lightbox");
-    lightbox.addEventListener("click", () => {
-        lightbox.style.display = "none";
-        document.getElementById("lightbox-img").src = "";
-        document.getElementById("lightbox-video").src = "";
+    lightbox.addEventListener("click", (event) => {
+        if (event.target === lightbox) {
+            lightbox.style.display = "none";
+            document.getElementById("lightbox-img").src = "";
+            document.getElementById("lightbox-video").src = "";
+        }
     });
     lightbox.addEventListener("keydown", (event) => {
         if (event.code == 'Escape') {
@@ -162,34 +108,29 @@ function initLightbox() {
     });
 }
 
-function openLightboxImage(image) {
+function openLightbox(item) {
     const lightbox = document.getElementById("lightbox");
-    const img = document.getElementById("lightbox-img");
-    document.getElementById("lightbox-title").textContent = image.title || "Untitled";
-    document.getElementById("lightbox-date").textContent = image.taken_at || "Unknown date";
-    img.src = `/api/images/${image.id}`;
+    if (item.type == "image") {
+        const vid = document.getElementById("lightbox-video");
+        vid.hidden = true;
+
+        const img = document.getElementById("lightbox-img");
+        img.src = `/api/images/${item.id}`;
+        img.hidden = false;
+        img.focus();
+    }
+    else {
+        const img = document.getElementById("lightbox-img");
+        img.hidden = true;
+
+        const vid = document.getElementById("lightbox-video");
+        vid.src = `/api/videos/${item.id}`;
+        vid.hidden = false;
+        vid.focus();
+    }
+    document.getElementById("lightbox-title").textContent = item.title || "Untitled";
+    document.getElementById("lightbox-date").textContent = item.taken_at || "Unknown date";
     lightbox.style.display = "flex";
-
-    const vid = document.getElementById("lightbox-video");
-    vid.hidden = true;
-    img.hidden = false;
-
-    img.focus();
-}
-
-function openLightboxVideo(video) {
-    const lightbox = document.getElementById("lightbox");
-    const vid = document.getElementById("lightbox-video");
-    document.getElementById("lightbox-title").textContent = video.title || "Untitled";
-    document.getElementById("lightbox-date").textContent = video.taken_at || "Unknown date";
-    vid.src = `/api/videos/${video.id}`;
-    lightbox.style.display = "flex";
-
-    const img = document.getElementById("lightbox-img");
-    img.hidden = true;
-    vid.hidden = false;
-
-    vid.focus()
 }
 
 window.addEventListener("scroll", () => {
