@@ -1,7 +1,43 @@
+h1 {
+    font-size: 30px;
+    text-align: center;
+    vertical-align: center;
+}
+
+.header {
+    position: relative;
+    text-align: center;
+}
+
+.navbar ul {
+    list-style-type: none;
+    background: purple;
+    padding: 0px;
+    margin: 0px;
+    overflow: hidden;
+}
+
+.navbar a {
+    color: white;
+    text-decoration: none;
+    padding: 15px;
+    display: block;
+    text-align: center;
+}
+
+.navbar a:hover {
+    background: blue;
+}
+
+.navbar li {
+    float: left;
+}
+
 #gallery {
     column-count: auto;
     column-gap: 5px;
-    column-width: 200px
+    column-width: 200px;
+    margin: 20px;
 }
 
 #gallery img {
