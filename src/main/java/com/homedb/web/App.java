@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jetty.util.Promise;
 
+import com.homedb.Config;
 import com.homedb.LimitedInputStream;
 import com.homedb.MyDate;
 import com.homedb.content.Content;
@@ -39,9 +40,9 @@ public class App {
         }).start(PORT);
 
         app.post("/login", ctx -> {
-            String username = ctx.formParam("user-input");
-            String password = ctx.formParam("pass-input");
-            if (username.equals("Andreas") && password.equals("1234")) {
+            String username = ctx.formParam("user-input").toLowerCase();
+            String password = ctx.formParam("pass-input").toLowerCase();
+            if (username.equals(Config.USERNAME) && password.equals(Config.PASSWORD)) {
                 ctx.cookieStore().set("secret", "secret");
                 ctx.redirect("/gallery.html");
             }
@@ -63,8 +64,6 @@ public class App {
             else {
                 content = new ArrayList<>();
             }
-            System.out.println(content.size());
-            Thread.sleep(1000);
 
             ctx.json(content.stream()
                     .map(img -> Map.of(
