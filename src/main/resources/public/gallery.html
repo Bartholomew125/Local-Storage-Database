@@ -6,19 +6,24 @@
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <h1>Gallery</h1>
-    <div id="navbar"></div>
-    <div id="gallery"></div>
-    <div id="lightbox" style="display:none;">
-        <img id="lightbox-img">
-        <video id="lightbox-video" autoplay loop controls>
-            <source src="" type="video/mp4">
-        </video>
-        <div id="lightbox-caption">
-            <p id="lightbox-title"></p>
-            <p id="lightbox-date"></p>
-        </div>
+    <div class="header">
+        <h1>Daddybasen</h1>
+        <div id="usericon"></div>
     </div>
+    <main>
+        <div id="navbar"></div>
+        <div id="gallery"></div>
+        <div id="lightbox" style="display:none;">
+            <img id="lightbox-img">
+            <video id="lightbox-video" autoplay loop controls>
+                <source src="" type="video/mp4">
+            </video>
+            <div id="lightbox-caption">
+                <p id="lightbox-title"></p>
+                <p id="lightbox-date"></p>
+            </div>
+        </div>
+    </main>
     <script>
         initGallery();
         initLightbox();

@@ -3,9 +3,12 @@ package com.homedb.web;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import org.eclipse.jetty.util.Promise;
 
 import com.homedb.LimitedInputStream;
 import com.homedb.MyDate;
@@ -35,15 +38,33 @@ public class App {
             config.staticFiles.add("/public");  // matches resources/public
         }).start(PORT);
 
-        // Your API routes sit alongside the static files
-        app.get("/api/hello", ctx -> ctx.json(Map.of("message", "Hello!")));
+        app.post("/login", ctx -> {
+            String username = ctx.formParam("user-input");
+            String password = ctx.formParam("pass-input");
+            if (username.equals("Andreas") && password.equals("1234")) {
+                ctx.cookieStore().set("secret", "secret");
+                ctx.redirect("/gallery.html");
+            }
+        });
 
         app.get("/api/gallery", ctx -> {
-            int page   = ctx.queryParamAsClass("page", Integer.class).getOrDefault(0);
-            int limit  = 20;
-            int offset = page * limit;
+            String cookie = ctx.cookieStore().get("secret");
+            List<Content> content;
+            if (cookie == null) {
+                content = new ArrayList<>();
+            }
+            else if (cookie.equals("secret")) {
+                int page   = ctx.queryParamAsClass("page", Integer.class).getOrDefault(0);
+                int limit  = 20;
+                int offset = page * limit;
 
-            List<Content> content = cf.fetch(limit, offset, "taken_at");
+                content = cf.fetch(limit, offset, "taken_at");
+            }
+            else {
+                content = new ArrayList<>();
+            }
+            System.out.println(content.size());
+            Thread.sleep(1000);
 
             ctx.json(content.stream()
                     .map(img -> Map.of(

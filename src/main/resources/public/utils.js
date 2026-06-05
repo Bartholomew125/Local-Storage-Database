@@ -4,6 +4,13 @@ const NUM_COLUMNS = window.innerWidth/400;
 const columns = [];
 const column_heights = [];
 
+window.addEventListener("DOMContentLoaded", (event) => {
+    const usericon = document.getElementById("usericon");
+    usericon.addEventListener("click", (event) => {
+        window.location.href = "login.html";
+    });
+});
+
 const pageObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -76,8 +83,6 @@ async function loadContent() {
     const res = await fetch(`/api/gallery?page=${page}`);
     const content = await res.json();
     if (content.length === 0) { loading = false; return; }
-
-    // const gallery = document.getElementById("gallery");
 
     content.forEach( (c, i) => {
         const cc = addContentToGallery(c);

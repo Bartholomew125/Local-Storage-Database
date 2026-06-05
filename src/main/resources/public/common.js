@@ -5,3 +5,4 @@ async function loadComponent(id, url) {
 }
 
 loadComponent("navbar", "/components/navbar.html");
+loadComponent("usericon", "/components/usericon.html");

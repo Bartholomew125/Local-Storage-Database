@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<head>
+    <script src="/common.js"> </script>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="header">
+        <h1>Login</h1>
+        <div id="usericon"></div>
+    </div>
+    <div id="navbar"></div>
+
+    <form id="login-form" action="/login" method="POST">
+        <div>
+            <label for="user-field">Username</label>
+            <input type="text" id="user-field" name="user-input" placeholder="Andreas" required>
+        </div>
+
+        <br>
+
+        <div>
+            <label for="pass-field">Password</label>
+            <input type="password" id="pass-field" name="pass-input" placeholder="1234" required>
+        </div>
+
+        <button type="reset">Reset</button>
+
+        <button type="submit">Submit</button>
+    </form>
+</body>
