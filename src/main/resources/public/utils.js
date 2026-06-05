@@ -92,11 +92,9 @@ async function loadContent() {
     content.forEach( (c, i) => {
         var cc;
         if (c.duration > 0) {
-            console.log(c, "is video")
             cc = addVideoToGallery(c);
         }
         else {
-            console.log(c, "is image")
             cc = addImageToGallery(c);
         }
         if (i === content.length - 1) {

@@ -1,9 +1,13 @@
 package com.homedb.web;
 
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import com.homedb.LimitedInputStream;
 import com.homedb.MyDate;
 import com.homedb.content.Content;
 import com.homedb.content.ImageContent;
@@ -93,14 +97,46 @@ public class App {
                 ctx.result(image.readFile());
             }
         });
+        
+        app.get("/api/videos/{id}", ctx -> {
+            VideoContent video = videosTable.select(ctx.pathParam("id"));
+            if (video == null) { ctx.status(404); return; }
 
-        app.get("api/videos/{id}", ctx -> {
-            String videoid = ctx.pathParam("id");
-            VideoContent video = videosTable.select(videoid);
-            if (video != null) {
-                ctx.result(video.readFile());
+            Path path = video.getPath();
+            long fileSize = Files.size(path);
+
+            ctx.header("Accept-Ranges", "bytes");
+            ctx.contentType("video/mp4");
+
+            String rangeHeader = ctx.header("Range");
+            if (rangeHeader != null) {
+                String[] parts = rangeHeader.replace("bytes=", "").split("-");
+                long start = Long.parseLong(parts[0]);
+                long end = parts.length > 1 && !parts[1].isEmpty()
+                    ? Long.parseLong(parts[1])
+                    : fileSize - 1;
+                long length = end - start + 1;
+
+                InputStream is = Files.newInputStream(path);
+                is.skip(start);
+
+                ctx.status(206)
+                   .header("Content-Range", "bytes " + start + "-" + end + "/" + fileSize)
+                   .header("Content-Length", String.valueOf(length))
+                   .result(new LimitedInputStream(is, length));
+            } else {
+                ctx.header("Content-Length", String.valueOf(fileSize))
+                   .result(Files.newInputStream(path));
             }
         });
+
+        // app.get("api/videos/{id}", ctx -> {
+        //     String videoid = ctx.pathParam("id");
+        //     VideoContent video = videosTable.select(videoid);
+        //     if (video != null) {
+        //         ctx.result(video.readFile());
+        //     }
+        // });
 
         app.get("api/images/{id}/thumbnail", ctx -> {
             String imageid = ctx.pathParam("id");
