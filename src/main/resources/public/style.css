@@ -1,3 +1,22 @@
+:root {
+    --bg:           #0c0a09;
+    --surface:      #141210;
+    --surface-hi:   #1c1916;
+    --surface-act:  #242019;
+    --border:       rgba(255, 248, 235, 0.07);
+    --border-hi:    purple;
+    --border-focus: rgba(196, 167, 100, 0.45);
+    --accent:       #c4a764;
+    --accent-muted: rgba(196, 167, 100, 0.14);
+    --text:         #f0ebe3;
+    --text-muted:   rgba(240, 235, 227, 0.42);
+    --text-dim:     rgba(240, 235, 227, 0.2);
+    --error:        #d97070;
+    --radius-sm:    6px;
+    --radius-md:    10px;
+    --radius-lg:    16px;
+}
+
 h1 {
     font-size: 30px;
     text-align: center;
@@ -30,7 +49,7 @@ h1 {
 }
 
 .navbar a {
-    color: white;
+    color: var(--text);
     text-decoration: none;
     padding: 15px;
     display: block;
@@ -62,6 +81,9 @@ h1 {
 .thumbnail-container {
     position: relative;
     cursor: pointer;
+    width: 100%;
+    display: block;
+    max-width: 100%;
 }
 
 .play-button {
@@ -88,32 +110,137 @@ h1 {
     border-left: 18px solid white;
 }
 
+/*
+ * =============================================================================
+ *                                  LIGHTBOX
+ * =============================================================================
+ */
 #lightbox {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(12, 10, 9, 0.96);
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
     z-index: 1000;
 }
 
-#lightbox-img {
+.lightbox-frame {
+    display: inline-flex;
+    flex-direction: column;
+    border: 5px solid var(--border-hi);
+    box-shadow: 0 0 0 1px rgba(196, 167, 100, 0.3), 0 25px 60px rgba(0,0,0,0.8);
+    border-radius: 10px;
+    overflow: hidden;
     max-width: 90vw;
     max-height: 90vh;
-    object-fit: contain;
 }
 
+#lightbox-img,
 #lightbox-video {
+    display: block;
     max-width: 90vw;
-    max-height: 90vh;
+    max-height: calc(90vh - 44px);
     object-fit: contain;
 }
 
 #lightbox-caption {
-    position: absolute;
-    bottom: 20px;
-    color: white;
-    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1rem;
+    height: 44px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
 }
+
+#lightbox-title {
+    font-size: 14px;
+    color: var(--text);
+    font-style: italic;
+    font-family: 'Cormorant', serif;
+    font-size: 1rem;
+}
+
+#lightbox-date {
+    font-size: 14px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text);
+}
+
+/*
+ * =============================================================================
+ *                                  LIGHTBOX MENU
+ * =============================================================================
+ */
+.lightbox-menu-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.lightbox-menu-btn {
+    background: transparent;
+    border: 1px solid var(--border-hi);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 14px;
+    width: 32px;
+    height: 28px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.lightbox-menu-btn:hover {
+    color: var(--text);
+    border-color: var(--border-hi);
+}
+
+.lightbox-menu-popup {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(20, 18, 16, 0.4);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-hi);
+    border-radius: 8px;
+    padding: 4px;
+    display: none;
+    flex-direction: column;
+    min-width: 160px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+
+.lightbox-menu-popup.open {
+    display: flex;
+}
+
+.menu-item {
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    transition: background 0.15s, color 0.15s;
+}
+
+.menu-item:hover {
+    background: var(--surface-act);
+    color: var(--text);
+}
+
+.menu-item--danger:hover {
+    color: var(--error);
+}
+

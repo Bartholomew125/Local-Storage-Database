@@ -11,6 +11,27 @@ window.addEventListener("DOMContentLoaded", (event) => {
     });
 });
 
+var currentItem = null;
+document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".menu-item");
+    if (btn) {
+        console.log(`Clicked ${currentItem.id}`, btn.dataset.action);
+        switch (btn.dataset.action) {
+            case "delete":
+                deleteContent(currentItem);
+                break;
+            case "rename":
+                renameContent(currentItem);
+                break;
+            case "tags":
+                editContentTags(currentItem);
+                break;
+            default:
+                console.log("Unkown menu item");
+                break;
+        }
+    }
+});
 const pageObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -101,6 +122,7 @@ async function loadContent() {
 
 function initLightbox() {
     const lightbox = document.getElementById("lightbox");
+    const menu = document.getElementById("lightbox-menu-btn")
     lightbox.addEventListener("click", (event) => {
         if (event.target === lightbox) {
             lightbox.style.display = "none";
@@ -115,28 +137,35 @@ function initLightbox() {
             document.getElementById("lightbox-video").src = "";
         }
     });
+    menu.addEventListener("click", (e) => {
+        e.stopPropagation();
+        document.getElementById("lightbox-menu-popup").classList.toggle("open");
+    });
+
+    // Close menu when clicking outside
+    lightbox.addEventListener("click", () => {
+        document.getElementById("lightbox-menu-popup").classList.remove("open");
+    });
+
 }
 
 function openLightbox(item) {
+    currentItem = item;
     const lightbox = document.getElementById("lightbox");
-    if (item.type == "image") {
-        const vid = document.getElementById("lightbox-video");
-        vid.hidden = true;
+    const img = document.getElementById("lightbox-img");
+    const vid = document.getElementById("lightbox-video");
+    const caption = document.getElementById("lightbox-caption");
 
-        const img = document.getElementById("lightbox-img");
+    if (item.type === "image") {
         img.src = `/api/images/${item.id}`;
-        img.hidden = false;
-        img.focus();
-    }
-    else {
-        const img = document.getElementById("lightbox-img");
-        img.hidden = true;
-
-        const vid = document.getElementById("lightbox-video");
+        img.style.display = "block";
+        vid.style.display = "none";
+    } else {
         vid.src = `/api/videos/${item.id}`;
-        vid.hidden = false;
-        vid.focus();
+        vid.style.display = "block";
+        img.style.display = "none";
     }
+
     document.getElementById("lightbox-title").textContent = item.title || "Untitled";
     document.getElementById("lightbox-date").textContent = item.taken_at || "Unknown date";
     lightbox.style.display = "flex";
