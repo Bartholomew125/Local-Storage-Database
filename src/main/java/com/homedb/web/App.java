@@ -17,11 +17,13 @@ import com.homedb.LimitedInputStream;
 import com.homedb.MyDate;
 import com.homedb.content.Content;
 import com.homedb.content.ImageContent;
+import com.homedb.content.Tag;
 import com.homedb.content.VideoContent;
 import com.homedb.database.ContentFetcher;
 import com.homedb.database.Database;
 import com.homedb.database.ImagesTable;
 import com.homedb.database.Table;
+import com.homedb.database.TagsTable;
 import com.homedb.database.VideosTable;
 
 import io.javalin.Javalin;
@@ -51,6 +53,7 @@ public class App {
         Database database = new Database();
         Table<ImageContent> imagesTable = new ImagesTable(database);
         Table<VideoContent> videosTable = new VideosTable(database);
+        TagsTable tagsTable = new TagsTable(database);
         ContentFetcher cf = new ContentFetcher(database);
 
         Javalin app = Javalin.create(config -> {
@@ -239,5 +242,48 @@ public class App {
             videosTable.delete(id);
         });
 
+        app.get("/api/tags", ctx -> {
+            String q = ctx.queryParamAsClass("q", String.class).getOrDefault("");
+            List<Tag> tags = tagsTable.search(q);
+            ctx.json(tags.stream()
+                .map(tag -> Map.of(
+                    "id", tag.id(),
+                    "name", tag.name()
+                )).toList()
+            );
+        });
+
+        app.get("/api/tags/{id}", ctx -> {
+            String id = ctx.pathParam("id");
+            List<Tag> tags = tagsTable.select(id);
+            ctx.json(tags.stream()
+                .map(tag -> Map.of(
+                    "id", tag.id(),
+                    "name", tag.name()
+                )).toList()
+            );
+        });
+
+        app.post("/api/tags/{id}", ctx -> {
+            String tagName = ctx.bodyAsClass(Map.class).get("tag").toString();
+            String id = ctx.pathParam("id");
+            int tag_id = tagsTable.getId(tagName);
+            if (tag_id == -1) {
+                tagsTable.insert(tagName);
+            }
+            tag_id = tagsTable.getId(tagName);
+            if (tag_id == -1)
+                throw new RuntimeException("NOT SUPPOSE TO HAPPEN");
+            Tag tag = new Tag(tag_id, tagName);
+            tagsTable.insert(tag, id);
+            ctx.status(200);
+        });
+
+        app.delete("/api/tags/{itemId}/{tagId}", ctx -> {
+            String itemId = ctx.pathParam("itemId");
+            int tagId = Integer.valueOf(ctx.pathParam("tagId"));
+            tagsTable.delete(itemId, tagId);
+            ctx.status(200);
+        });
     }
 }

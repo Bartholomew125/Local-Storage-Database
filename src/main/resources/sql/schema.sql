@@ -41,3 +41,15 @@ CREATE TABLE videos (
 CREATE INDEX idx_videos_id       ON videos(id);
 CREATE INDEX idx_videos_taken_at ON videos(taken_at);
 
+CREATE TABLE tags (
+    tag_id          INTEGER         NOT NULL,
+    content_id      CHAR(40)        NOT NULL,
+    PRIMARY KEY(tag_id, content_id)
+);
+
+CREATE INDEX idx_tags_content_id ON tags(content_id);
+
+CREATE TABLE tag_ids (
+    id      INTEGER PRIMARY KEY     NOT NULL,
+    name    VARCHAR(100)            NOT NULL
+);

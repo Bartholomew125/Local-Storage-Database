@@ -31,6 +31,12 @@
                 <div id="lightbox-caption">
                     <p id="lightbox-title"></p>
                     <div class="lightbox-menu-wrap">
+                        <!-- Tag popup -->
+                        <div id="tag-popup" style="display:none;">
+                            <input id="tag-search" type="text" placeholder="Search or create tag...">
+                            <div id="tag-results"></div>
+                        </div>
+                        
                         <!-- menu popup -->
                         <div class="lightbox-menu-popup" id="lightbox-menu-popup">
                             <button class="menu-item" data-action="rename">
@@ -52,6 +58,8 @@
                     </div>
                     <p id="lightbox-date"></p>
                 </div>
+
+                <div id="lightbox-tags"></div>
             </div>
         </div>
     </main>

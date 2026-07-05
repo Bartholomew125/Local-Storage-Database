@@ -32,6 +32,14 @@ document.addEventListener("click", (e) => {
         }
     }
 });
+
+document.addEventListener("click", (e) => {
+    const popup = document.getElementById("tag-popup");
+    if (!e.target.closest("#tag-popup") && !e.target.closest("[data-action='tags']")) {
+        popup.style.display = "none";
+    }
+});
+
 const pageObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -168,6 +176,9 @@ function openLightbox(item) {
     document.getElementById("lightbox-title").textContent = item.title || "Untitled";
     document.getElementById("lightbox-date").textContent = item.taken_at || "Unknown date";
     lightbox.style.display = "flex";
+    loadTags(item);
+}
+
 function deleteContent(item) {
     function removeItem(item) {
         document.getElementById("lightbox").style.display = "none";
@@ -232,6 +243,84 @@ function renameContent(item) {
         }
     }
     titleEl.addEventListener("keydown", onKey);
+}
+
+function editContentTags(item) {
+    const popup = document.getElementById("tag-popup");
+    popup.style.display = popup.style.display === "none" ? "block" : "none";
+    if (popup.style.display === "none") return;
+
+    const search = document.getElementById("tag-search");
+    search.value = "";
+    search.oninput = null; // remove old handler
+    search.replaceWith(search.cloneNode(true)); // remove old keydown listeners
+    const freshSearch = document.getElementById("tag-search");
+
+    freshSearch.focus();
+    renderTagResults("", item);
+
+    freshSearch.oninput = () => renderTagResults(freshSearch.value.trim(), item);
+    // freshSearch.addEventListener("keydown", async (e) => {
+    //     if (e.key === "Enter" && freshSearch.value.trim()) {
+    //         await addTag(item, freshSearch.value.trim());
+    //         freshSearch.value = "";
+    //         await renderTagResults("", item);
+    //     }
+    // });
+}
+
+async function renderTagResults(likeName, item) {
+    if (likeName === "") {
+        return;
+    }
+    const res = await fetch(`/api/tags?q=${encodeURIComponent(likeName)}`);
+    const tags = await res.json();
+    const container = document.getElementById("tag-results");
+    container.innerHTML = "";
+
+    tags.forEach(tag => {
+        const btn = document.createElement("button");
+        btn.className = "tag-result";
+        btn.textContent = tag.name;
+        btn.onclick = () => addTag(item, tag.name);
+        container.appendChild(btn);
+    });
+
+    if (likeName && !tags.find(t => t.name === likeName)) {
+        const btn = document.createElement("button");
+        btn.className = "tag-result";
+        btn.textContent = `+ Create "${likeName}"`;
+        btn.onclick = () => addTag(item, likeName);
+        container.appendChild(btn);
+    }
+}
+
+async function addTag(item, tagName) {
+    await fetch(`/api/tags/${item.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tag: tagName })
+    });
+    document.getElementById("tag-popup").style.display = "none";
+    await loadTags(item);
+}
+
+async function loadTags(item) {
+    const res = await fetch(`/api/tags/${item.id}`);
+    const tags = await res.json();
+    console.log(tags);
+    const container = document.getElementById("lightbox-tags");
+    container.innerHTML = "";
+    tags.forEach(tag => {
+        const el = document.createElement("div");
+        el.className = "tag";
+        el.innerHTML = `${tag.name}<span class="tag-remove" data-tag="${tag.name}">✕</span>`;
+        el.querySelector(".tag-remove").onclick = async () => {
+            await fetch(`/api/tags/${item.id}/${encodeURIComponent(tag.name)}`, { method: "DELETE" });
+            await loadTags(item);
+        };
+        container.appendChild(el);
+    });
 }
 
 window.addEventListener("scroll", () => {
