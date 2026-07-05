@@ -64,6 +64,9 @@ public class ImagesTable extends AbstractTable<ImageContent> {
 
     @Override
     public int insert(Set<ImageContent> items) {
+        if (items.size() == 0) {
+            return 0;
+        }
         String INSERT_ALL_SQL = "INSERT INTO "+this.tableName+" VALUES ";
         List<String> placeholders = new ArrayList<>();
         for (int i = 0; i < items.size(); i++) placeholders.add(this.INSERT_SQL_PLACEHOLDER);
@@ -94,6 +97,7 @@ public class ImagesTable extends AbstractTable<ImageContent> {
                 return 0;
             }
             else {
+                System.out.println(INSERT_ALL_SQL);
                 e.printStackTrace();
                 throw new RuntimeException();
             }

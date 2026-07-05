@@ -12,6 +12,13 @@
     </div>
     <main>
         <div id="navbar"></div>
+        <select id="sortBy">
+            <option value="taken_at">Taken At</option>
+        </select>
+        <select id="ordering">
+            <option value="ASC">Ascending</option>
+            <option value="DESC">Descending</option>
+        </select>
         <div id="gallery"></div>
         <div id="lightbox" style="display:none;">
             <img id="lightbox-img">
@@ -27,7 +34,23 @@
     <script>
         initGallery();
         initLightbox();
+
+        // Read params from URL on load
+        const params = new URLSearchParams(window.location.search);
+        document.getElementById("sortBy").value   = params.get("sortBy")   || "taken_at";
+        document.getElementById("ordering").value = params.get("ordering") || "DESC";
+
         loadContent();
+
+        // On change, push new params to URL and reload
+        function updateSort() {
+            const sortBy   = document.getElementById("sortBy").value;
+            const ordering = document.getElementById("ordering").value;
+            window.location.href = `?sortBy=${sortBy}&ordering=${ordering}`;
+        }
+
+        document.getElementById("sortBy").addEventListener("change",   updateSort);
+        document.getElementById("ordering").addEventListener("change", updateSort);
     </script>
 </body>
 </html>

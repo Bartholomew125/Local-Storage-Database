@@ -21,16 +21,16 @@ public class ContentFetcher {
         +" FROM videos UNION SELECT"
         +" id,title,taken_at,path,width,height,NULL,mimetype,views,latitude,latitudeSpan,longitude,longitudeSpan,altitude"
         +" FROM images"
-        +" ORDER BY %s DESC NULLS LAST"
+        +" ORDER BY %s %s NULLS LAST"
         +" LIMIT ? OFFSET ?";
 
     public ContentFetcher(Database database) {
         this.database = database;
     }
 
-    public List<Content> fetch(int limit, int offset, String sortBy) {
+    public List<Content> fetch(int limit, int offset, String sortBy, String ordering) {
         List<Content> content = new ArrayList<>();
-        String sql = FETCH_ALL_SQL.formatted(sortBy);
+        String sql = FETCH_ALL_SQL.formatted(sortBy, ordering);
         try(PreparedStatement stmt = this.database.createPreparedStatement(sql)) {
             stmt.setInt(1, limit);
             stmt.setInt(2, offset);

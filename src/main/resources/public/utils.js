@@ -80,7 +80,11 @@ function addContentToGallery(item) {
 async function loadContent() {
     if (loading) return;
     loading = true;
-    const res = await fetch(`/api/gallery?page=${page}`);
+
+    var sortBy = document.getElementById("sortBy").value;
+    var ordering = document.getElementById("ordering").value;
+
+    const res = await fetch(`/api/gallery?page=${page}&sortBy=${sortBy}&ordering=${ordering}`);
     const content = await res.json();
     if (content.length === 0) { loading = false; return; }
 

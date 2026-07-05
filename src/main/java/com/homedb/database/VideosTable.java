@@ -66,6 +66,9 @@ public class VideosTable extends AbstractTable<VideoContent> {
 
     @Override
     public int insert(Set<VideoContent> items) {
+        if (items.size() == 0) {
+            return 0;
+        }
         String INSERT_ALL_SQL = "INSERT INTO "+this.tableName+" VALUES ";
         List<String> placeholders = new ArrayList<>();
         for (int i = 0; i < items.size(); i++) placeholders.add(this.INSERT_SQL_PLACEHOLDER);
@@ -98,6 +101,7 @@ public class VideosTable extends AbstractTable<VideoContent> {
             }
             else {
                 e.printStackTrace();
+                System.out.println(INSERT_ALL_SQL);
                 throw new RuntimeException();
             }
         }
