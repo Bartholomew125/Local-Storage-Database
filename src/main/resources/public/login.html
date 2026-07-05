@@ -1,30 +1,51 @@
 <!DOCTYPE html>
+<html>
 <head>
     <script src="/common.js"> </script>
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <div class="header">
-        <h1>Login</h1>
-        <div id="usericon"></div>
+    <div>
+        <div class="header">
+            <h1>Login</h1>
+            <div id="usericon"></div>
+        </div>
+        <div id="navbar"></div>
+
+        <form id="login-form">
+            <div>
+                <label for="user-field">Username</label>
+                <input type="text" id="username" name="username" placeholder="andreas" required>
+            </div>
+
+            <br>
+
+            <div>
+                <label for="pass-field">Password</label>
+                <input type="password" id="password" name="password" placeholder="1234" required>
+            </div>
+
+            <button type="reset">Reset</button>
+
+            <button type="submit">Submit</button>
+        </form>
+        <p id="error" style="color:red;"></p>
     </div>
-    <div id="navbar"></div>
+    <script>
+        document.getElementById("login-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const data = new FormData();
+            data.append("username", document.getElementById("username").value);
+            data.append("password", document.getElementById("password").value);
 
-    <form id="login-form" action="/login" method="POST">
-        <div>
-            <label for="user-field">Username</label>
-            <input type="text" id="user-field" name="user-input" placeholder="Andreas" required>
-        </div>
+            const res = await fetch("/api/login", { method: "POST", body: data });
 
-        <br>
-
-        <div>
-            <label for="pass-field">Password</label>
-            <input type="password" id="pass-field" name="pass-input" placeholder="1234" required>
-        </div>
-
-        <button type="reset">Reset</button>
-
-        <button type="submit">Submit</button>
-    </form>
+            if (res.ok) {
+                window.location.href = "/";
+            } else {
+                document.getElementById("error").textContent = "Invalid username or password";
+            }
+        });
+    </script>
 </body>
+</html>

@@ -3,14 +3,16 @@ package com.homedb.web;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.jetty.util.Promise;
-
-import com.homedb.Config;
 import com.homedb.LimitedInputStream;
 import com.homedb.MyDate;
 import com.homedb.content.Content;
@@ -23,10 +25,26 @@ import com.homedb.database.Table;
 import com.homedb.database.VideosTable;
 
 import io.javalin.Javalin;
+import io.javalin.http.UnauthorizedResponse;
 
 public class App {
 
     private static final int PORT = 8080;
+
+    private static final Set<String> SESSIONS = ConcurrentHashMap.newKeySet();
+    private static final String USERNAME = "andreas";
+    private static final String PASSWORD_HASH = sha256("1234");
+
+    private static String sha256(String input) {
+        try {
+            byte[] hash = MessageDigest.getInstance("SHA-256").digest(input.getBytes());
+            StringBuilder hex = new StringBuilder();
+            for (byte b : hash) hex.append(String.format("%02x", b));
+            return hex.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public static void main(String[] args) {
 
@@ -39,31 +57,53 @@ public class App {
             config.staticFiles.add("/public");  // matches resources/public
         }).start(PORT);
 
-        app.post("/login", ctx -> {
-            String username = ctx.formParam("user-input").toLowerCase();
-            String password = ctx.formParam("pass-input").toLowerCase();
-            if (username.equals(Config.USERNAME) && password.equals(Config.PASSWORD)) {
-                ctx.cookieStore().set("secret", "secret");
-                ctx.redirect("/gallery.html");
+        // Protect all pages and API routes
+        app.before(ctx -> {
+            String path = ctx.path();
+            if (path.equals("/login")          ||
+                path.equals("/login.html")     ||
+                path.equals("/api/login")      ||
+                path.endsWith(".css")          ||
+                path.endsWith(".js")           ||
+                path.startsWith("/components")) return;
+
+            String token = ctx.cookie("session");
+            if (token == null || !SESSIONS.contains(token)) {
+                if (path.startsWith("/api")) {
+                    throw new UnauthorizedResponse();
+                } else {
+                    ctx.redirect("/login.html");
+                }
             }
         });
 
-        app.get("/api/gallery", ctx -> {
-            String cookie = ctx.cookieStore().get("secret");
-            List<Content> content;
-            if (cookie == null) {
-                content = new ArrayList<>();
+        app.post("/api/login", ctx -> {
+            String username = ctx.formParam("username");
+            String password = ctx.formParam("password");
+            if (USERNAME.equals(username) && PASSWORD_HASH.equals(sha256(password))) {
+                String token = UUID.randomUUID().toString();
+                SESSIONS.add(token);
+                ctx.cookie("session", token);
+                ctx.status(200);
+            } else {
+                ctx.status(401).result("Invalid credentials");
             }
-            else if (cookie.equals("secret")) {
-                int page   = ctx.queryParamAsClass("page", Integer.class).getOrDefault(0);
-                int limit  = 20;
-                int offset = page * limit;
+        });
 
-                content = cf.fetch(limit, offset, "taken_at");
-            }
-            else {
-                content = new ArrayList<>();
-            }
+        app.post("/api/logout", ctx -> {
+            SESSIONS.remove(ctx.cookie("session"));
+            ctx.removeCookie("session");
+            ctx.redirect("/login.html");
+        });
+
+        app.get("/api/gallery", ctx -> {
+            int page = ctx.queryParamAsClass("page", Integer.class).getOrDefault(0);
+            String sortBy = ctx.queryParamAsClass("sortBy", String.class).getOrDefault("taken_at");
+            String ordering = ctx.queryParamAsClass("ordering", String.class).getOrDefault("DESC");
+            int limit  = 20;
+            int offset = page * limit;
+
+            List<Content> content = cf.fetch(limit, offset, sortBy, ordering);
 
             ctx.json(content.stream()
                     .map(img -> Map.of(
