@@ -82,16 +82,6 @@ public abstract class AbstractContent implements Content {
     //     for (byte b : hash) hex.append(String.format("%02x", b));
     //     return hex.toString();
     // }
-    public static String generateId(Path file) throws IOException, NoSuchAlgorithmException {
-        BasicFileAttributes attrs = Files.readAttributes(file, BasicFileAttributes.class);
-        String input = file.toAbsolutePath().toString() + attrs.size() + attrs.lastModifiedTime();
-        byte[] hash = MessageDigest
-            .getInstance("SHA-1")
-            .digest(input.getBytes());
-        StringBuilder hex = new StringBuilder();
-        for (byte b : hash) hex.append(String.format("%02x", b));
-        return hex.toString();
-    }
 
     // public static Path generateThumbnail(String id, Path source, int width, int height) throws IOException {
     //     Path thumbnail = Config.DATA_DIR.resolve(id + ".thumbnail");
