@@ -163,33 +163,4 @@ public class ImagesTable extends AbstractTable<ImageContent> {
             return null;
         }
     }
-
-    // @Override
-    // public ResultSet select(List<String> columns, Set<Condition> conditions) {
-    //     if (!ImagesTable.COLUMNS.containsAll(columns)) {
-    //         throw new SQLException("Invalid columns");
-    //     }
-    //     // Create columns argument
-    //     StringBuilder sbColumns = new StringBuilder();
-    //     sbColumns.append("(");
-    //     for (String col : columns) {
-    //         sbColumns.append(col);
-    //         sbColumns.append(",");
-    //     }
-    //     sbColumns.deleteCharAt(sbColumns.length()-1);
-    //     sbColumns.append(")");
-    //
-    //     // Create conditions argument
-    //     StringBuilder sbConditions = new StringBuilder();
-    //     for (Condition cond : conditions) {
-    //         sbConditions.append(cond.toString());
-    //     }
-    //
-    //     try(PreparedStatement stmt = this.createPreparedStatement(SELECT_SQL)) {
-    //         stmt.setString(1, sb.toString());
-    //         stmt.setString(2, , x);
-    //     } catch (Exception e) {
-    //         // TODO: handle exception
-    //     }
-    // }
 }

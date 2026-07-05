@@ -215,8 +215,29 @@ public class App {
             }
         });
 
-        app.get("/json", ctx -> {
-            ctx.json(Map.of("status", "ok", "message", "Hello"));
+        app.patch("/api/images/{id}/rename", ctx -> {
+            String id = ctx.pathParam("id");
+            String title = ctx.bodyAsClass(Map.class).get("title").toString();
+            imagesTable.rename(id, title);
+            ctx.status(200);
         });
+
+        app.patch("/api/videos/{id}/rename", ctx -> {
+            String id = ctx.pathParam("id");
+            String title = ctx.bodyAsClass(Map.class).get("title").toString();
+            videosTable.rename(id, title);
+            ctx.status(200);
+        });
+
+        app.get("/api/images/{id}/delete", ctx -> {
+            String id = ctx.pathParam("id");
+            imagesTable.delete(id);
+        });
+
+        app.get("/api/videos/{id}/delete", ctx -> {
+            String id = ctx.pathParam("id");
+            videosTable.delete(id);
+        });
+
     }
 }

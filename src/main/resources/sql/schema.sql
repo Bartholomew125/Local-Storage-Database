@@ -12,6 +12,7 @@ CREATE TABLE images (
     longitude       FLOAT,
     longitudeSpan   FLOAT,
     altitude        FLOAT,
+    deleted_at      DATETIME,
     PRIMARY KEY(id)
 );
 
@@ -33,6 +34,7 @@ CREATE TABLE videos (
     longitude       FLOAT,
     longitudeSpan   FLOAT,
     altitude        FLOAT,
+    deleted_at      DATETIME,
     PRIMARY KEY(id)
 );
 

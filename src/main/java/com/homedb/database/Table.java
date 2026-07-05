@@ -9,4 +9,6 @@ public interface Table<T> {
     public int insert(Set<T> items);
     public T select(String itemID);
     public List<T> select(int limit, int offset, String sortBy);
+    public int rename(String itemID, String title);
+    public int delete(String itemID);
 }

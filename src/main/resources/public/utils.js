@@ -169,6 +169,70 @@ function openLightbox(item) {
     document.getElementById("lightbox-title").textContent = item.title || "Untitled";
     document.getElementById("lightbox-date").textContent = item.taken_at || "Unknown date";
     lightbox.style.display = "flex";
+function deleteContent(item) {
+    function removeItem(item) {
+        document.getElementById("lightbox").style.display = "none";
+        document.getElementById("lightbox-video").src = "";
+        document.getElementById("lightbox-img").src = "";
+        item.element.remove();
+    }
+    if (item.type === "image") {
+        fetch(`/api/images/${item.id}/delete`);
+        removeItem(item);
+    }
+    else if (item.type === "video") {
+        fetch(`/api/videos/${item.id}/delete`);
+        removeItem(item);
+    }
+    else {
+        console.log("Unknown type of content to delete.");
+    }
+}
+
+function renameContent(item) {
+    const titleEl = document.getElementById("lightbox-title");
+    const original = titleEl.textContent;
+
+    titleEl.contentEditable = "true";
+    titleEl.focus();
+
+    // Select all text
+    const range = document.createRange();
+    range.selectNodeContents(titleEl);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+
+    async function onKey(e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            titleEl.contentEditable = "false";
+            titleEl.removeEventListener("keydown", onKey);
+            const newTitle = titleEl.textContent.trim();
+            if (newTitle !== original) {
+                item.title = newTitle;
+                if (item.type === "image") {
+                    await fetch(`/api/images/${item.id}/rename`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ title: newTitle })
+                    });
+                }
+                else if (item.type === "video") {
+                    await fetch(`/api/videos/${item.id}/rename`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ title: newTitle })
+                    });
+                }
+            }
+        }
+        if (e.key === "Escape") {
+            titleEl.contentEditable = "false";
+            titleEl.removeEventListener("keydown", onKey);
+            titleEl.textContent = original;
+        }
+    }
+    titleEl.addEventListener("keydown", onKey);
 }
 
 window.addEventListener("scroll", () => {
