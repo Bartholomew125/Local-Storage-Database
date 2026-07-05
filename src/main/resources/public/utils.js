@@ -41,16 +41,6 @@ const pageObserver = new IntersectionObserver((entries) => {
     });
 }, { rootMargin: "0px 0px 500px 0px" });  // fire 500px before it enters the viewport
 
-const lazyObserver = new IntersectionObserver( (entries) => {
-    entries.forEach( entry => {
-        if (entry.isIntersecting) {
-            const img = entry.target;
-            img.src = img.dataset.src;
-            lazyObserver.unobserve(img);
-        }
-    });
-});
-
 function initGallery() {
     const gallery = document.getElementById("gallery");
     gallery.style.display = "flex";
@@ -62,6 +52,10 @@ function initGallery() {
         col.style.display = "flex";
         col.style.flexDirection = "column";
         col.style.gap = "5px";
+        col.style.width = `${100 / NUM_COLUMNS}`;
+        col.style.flexShrink = "0";
+        col.style.minWidth = "0";
+        col.style.overflow = "hidden";
         gallery.appendChild(col);
         columns.push(col);
         column_heights.push(0);
@@ -72,15 +66,18 @@ function addContentToGallery(item) {
     const container = document.createElement("div");
     container.className = "thumbnail-container";
     container.addEventListener("click", () => openLightbox(item));
+    container.style.flexShrink = "0";
+    container.style.overflow = "hidden";
 
     const thumbnail = document.createElement("img");
     if (item.type == "video") {
-        thumbnail.dataset.src = `/api/videos/${item.id}/thumbnail`;
+        thumbnail.src = `/api/videos/${item.id}/thumbnail`;
     } else {
-        thumbnail.dataset.src = `/api/images/${item.id}/thumbnail`;
+        thumbnail.src = `/api/images/${item.id}/thumbnail`;
     }
     thumbnail.alt = item.title || "untitled";
     thumbnail.style = "width: 100%; display: block;";
+    thumbnail.loading = "lazy"
     container.appendChild(thumbnail);
 
     if (item.type === "video") {
@@ -93,7 +90,8 @@ function addContentToGallery(item) {
     const shortest_idx = column_heights.indexOf(Math.min(...column_heights));
     columns[shortest_idx].appendChild(container);
     column_heights[shortest_idx] += frac_height;
-    lazyObserver.observe(thumbnail);
+    
+    item.element = container;
 
     return container;
 }
@@ -123,6 +121,7 @@ async function loadContent() {
 function initLightbox() {
     const lightbox = document.getElementById("lightbox");
     const menu = document.getElementById("lightbox-menu-btn")
+
     lightbox.addEventListener("click", (event) => {
         if (event.target === lightbox) {
             lightbox.style.display = "none";
