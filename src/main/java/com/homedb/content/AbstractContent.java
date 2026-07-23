@@ -25,8 +25,14 @@ public abstract class AbstractContent implements Content {
     private Path path;
     private Path thumbnailPath;
     private ContentMetaData metaData;
+    private Long deletedAt;
 
-    public AbstractContent(String id, Path path, ContentMetaData metaData) {
+    public AbstractContent(
+            String id, 
+            Path path, 
+            ContentMetaData metaData, 
+            Long deletedAt
+        ) {
         if (!metaData.isValid()) {
             throw new RuntimeException("Metadata is not valid");
         }
@@ -42,6 +48,7 @@ public abstract class AbstractContent implements Content {
             e.printStackTrace();
             System.exit(1);
         }
+        this.deletedAt = deletedAt;
     }
 
     @Override
@@ -56,7 +63,12 @@ public abstract class AbstractContent implements Content {
 
     @Override
     public ContentMetaData getMetaData() {
-        return metaData;
+        return this.metaData;
+    }
+
+    @Override
+    public Long getDeletedAt() {
+        return this.deletedAt;
     }
 
     @Override

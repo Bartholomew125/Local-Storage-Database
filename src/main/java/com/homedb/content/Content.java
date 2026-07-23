@@ -10,6 +10,7 @@ public interface Content {
     public String getId();
     public Path getPath();
     public ContentMetaData getMetaData();
+    public Long getDeletedAt();
     public InputStream readFile() throws IOException;
     public InputStream readThumbnailFile() throws IOException;
 }

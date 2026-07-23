@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -30,7 +31,8 @@ public class VideosTable extends AbstractTable<VideoContent> {
             "latitudeSpan", 
             "longitude", 
             "longitudeSpan", 
-            "altitude"
+            "altitude",
+            "deleted_at"
         ));
     }
 
@@ -51,6 +53,12 @@ public class VideosTable extends AbstractTable<VideoContent> {
             stmt.setFloat (12, item.getMetaData().geoData.longitude());
             stmt.setFloat (13, item.getMetaData().geoData.longitudeSpan());
             stmt.setFloat (14, item.getMetaData().geoData.altitude());
+            if (item.getDeletedAt() == null) {
+                stmt.setNull(15, Types.TIMESTAMP);
+            }
+            else {
+                stmt.setLong(15, item.getDeletedAt());
+            }
             return stmt.executeUpdate();
         } catch (SQLException e) {
             if (e.getMessage().toString().startsWith("[SQLITE_CONSTRAINT_PRIMARYKEY]")) {
@@ -91,6 +99,12 @@ public class VideosTable extends AbstractTable<VideoContent> {
                 stmt.setFloat (i+12, item.getMetaData().geoData.longitude());
                 stmt.setFloat (i+13, item.getMetaData().geoData.longitudeSpan());
                 stmt.setFloat (i+14, item.getMetaData().geoData.altitude());
+                if (item.getDeletedAt() == null) {
+                    stmt.setNull(i+15, Types.TIMESTAMP);
+                }
+                else {
+                    stmt.setLong(i+15, item.getDeletedAt());
+                }
                 i = i + this.columns.size();
             }
             return stmt.executeUpdate();
@@ -128,8 +142,9 @@ public class VideosTable extends AbstractTable<VideoContent> {
                     res.getFloat("latitudeSpan"),
                     res.getFloat("longitudeSpan")
                 );
+                Long deletedAt = res.getLong("deleted_at");
                 Path path = Path.of(res.getString("path"));
-                VideoContent video = new VideoContent(itemID, path, metaData);
+                VideoContent video = new VideoContent(itemID, path, metaData, deletedAt);
                 return video;
             }
             else {

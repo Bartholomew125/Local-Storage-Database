@@ -6,7 +6,20 @@ import com.homedb.metadata.ContentMetaData;
 
 public class ImageContent extends AbstractContent {
 
-    public ImageContent(String id, Path path, ContentMetaData metaData) {
-        super(id, path, metaData);
+    public ImageContent(
+            String id, 
+            Path path, 
+            ContentMetaData metaData, 
+            Long deletedAt
+    ) {
+        super(id, path, metaData, deletedAt);
+    }
+
+    public ImageContent(
+            String id,
+            Path path,
+            ContentMetaData metaData
+    ) {
+        super(id, path, metaData, null);
     }
 }
