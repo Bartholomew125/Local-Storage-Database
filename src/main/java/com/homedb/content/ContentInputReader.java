@@ -32,7 +32,7 @@ public class ContentInputReader {
                     // Source - https://stackoverflow.com/a/3571239
                     // Posted by EboMike, modified by community. See post 'Timeline' for change history
                     // Retrieved 2026-05-24, License - CC BY-SA 3.0
-                    System.out.println("LOGGING: "+Thread.currentThread().getName());
+                    // System.out.println("LOGGING: "+Thread.currentThread().getName());
                     String extension = "";
                     int i = file.toString().lastIndexOf('.');
                     if (i > 0) {
@@ -40,16 +40,16 @@ public class ContentInputReader {
                     }
                     files.merge(extension, 1, Integer::sum);
                     System.out.println(files);
-                    System.out.println("DONE LOGGING: "+Thread.currentThread().getName());
+                    // System.out.println("DONE LOGGING: "+Thread.currentThread().getName());
                     
-                    System.out.println("EXTRACTING: "+Thread.currentThread().getName());
+                    // System.out.println("EXTRACTING: "+Thread.currentThread().getName());
                     MetaDataExtractorService service = new MetaDataExtractorService(file);
                     service.addExtractor(new ExifMetaDataExtractor());
                     service.addExtractor(new GoogleMetaDataExtractor());
                     ContentMetaData metaData = service.extract();
-                    System.out.println("DONE EXTRACTING: "+Thread.currentThread().getName());
+                    // System.out.println("DONE EXTRACTING: "+Thread.currentThread().getName());
 
-                    System.out.println("GENERATING ID: "+Thread.currentThread().getName());
+                    // System.out.println("GENERATING ID: "+Thread.currentThread().getName());
                     String id = "";
                     try {
                         id = generateId(file, metaData);
@@ -57,9 +57,9 @@ public class ContentInputReader {
                         e.printStackTrace();
                         System.exit(1);
                     }
-                    System.out.println("DONE GENERATING ID: "+Thread.currentThread().getName());
+                    // System.out.println("DONE GENERATING ID: "+Thread.currentThread().getName());
 
-                    System.out.println("CREATING CONTENT: "+Thread.currentThread().getName());
+                    // System.out.println("CREATING CONTENT: "+Thread.currentThread().getName());
                     Content c;
                     if (metaData.mimeType.isVideo()) {
                         c = new VideoContent(id, file, metaData);
@@ -67,7 +67,7 @@ public class ContentInputReader {
                     else {
                         c = new ImageContent(id, file, metaData);
                     }
-                    System.out.println("DONE CREATING CONTENT: "+Thread.currentThread().getName());
+                    // System.out.println("DONE CREATING CONTENT: "+Thread.currentThread().getName());
                     return c;
                 });
             

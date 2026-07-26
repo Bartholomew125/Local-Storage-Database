@@ -40,14 +40,7 @@ public abstract class AbstractContent implements Content {
         this.path = path;
         this.id = id;
         this.thumbnailPath = Path.of(path.toString() + ".thumbnail");
-        int thumbnailWidth =  (int) (metaData.width  * 0.4);
-        int thumbnailHeight = (int) (metaData.height * 0.4);
-        try {
-            this.thumbnailPath = AbstractContent.generateThumbnail(id, path, thumbnailWidth, thumbnailHeight);
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
+        this.thumbnailPath = null;
         this.deletedAt = deletedAt;
     }
 
@@ -78,6 +71,11 @@ public abstract class AbstractContent implements Content {
 
     @Override
     public InputStream readThumbnailFile() throws IOException {
+        if (this.thumbnailPath == null) {
+            int thumbnailWidth =  (int) (metaData.width  * 0.4);
+            int thumbnailHeight = (int) (metaData.height * 0.4);
+            this.thumbnailPath = AbstractContent.generateThumbnail(id, path, thumbnailWidth, thumbnailHeight);
+        }
         return Files.newInputStream(this.thumbnailPath);
     }
 
