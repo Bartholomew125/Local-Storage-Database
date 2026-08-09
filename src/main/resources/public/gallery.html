@@ -12,56 +12,73 @@
     </div>
     <main>
         <div id="navbar"></div>
+
+        <!-- SORTING SELECTION -->
         <select id="sortBy">
             <option value="taken_at">Taken At</option>
         </select>
+
+        <!-- ORDERING SELECTION -->
         <select id="ordering">
             <option value="ASC">Ascending</option>
             <option value="DESC">Descending</option>
         </select>
-        <div id="gallery"></div>
-        <div id="lightbox" style="display:none;">
-            <div class="lightbox-frame">
 
-                <img id="lightbox-img" alt="" style="display:none;">
-                <video id="lightbox-video" style="display:none;" autoplay loop controls>
-                    <source src="" type="video/mp4">
-                </video>
+        <!-- LIGHTBOX -->
+        <div id="lightbox" class="lightbox" style="display: none">
+            <div class="lightbox-contents">
+                <div id="lightbox-media-menu-wrap">
+                    <!-- MENU BUTTON -->
+                    <button id="lightbox-menu-button">
+                        Menu
+                    </button>
 
-                <div id="lightbox-caption">
-                    <p id="lightbox-title"></p>
-                    <div class="lightbox-menu-wrap">
-                        <!-- Tag popup -->
-                        <div id="tag-popup" style="display:none;">
-                            <input id="tag-search" type="text" placeholder="Search or create tag...">
-                            <div id="tag-results"></div>
-                        </div>
-                        
-                        <!-- menu popup -->
-                        <div class="lightbox-menu-popup" id="lightbox-menu-popup">
-                            <button class="menu-item" data-action="rename">
-                                <i class="fa-regular fa-pen-to-square"></i> 
-                                 Rename
-                            </button>
-                            <button class="menu-item" data-action="tags">
-                                <i class="fa-solid fa-tag"></i>
-                                 Add tags
-                            </button>
-                            <button class="menu-item menu-item--danger" data-action="delete">
-                                <i class="fa-regular fa-trash-can"></i>
-                                 Remove
-                            </button>
-                        </div>
-                        <button class="lightbox-menu-btn" id="lightbox-menu-btn">
-                            <i class="fa-solid fa-ellipsis"></i>
+                    <!-- MENU POPUP -->
+                    <div id="lightbox-menu-popup">
+                        <button class="menu-item-button" data-action="rename">
+                            <i class="fa-regular fa-pen-to-square"></i> 
+                            Rename
+                        </button>
+                        <button class="menu-item-button" data-action="add tags">
+                            <i class="fa-solid fa-tag"></i>
+                            Add tags
+                        </button>
+                        <button class="menu-item-button" data-action="remove">
+                            <i class="fa-regular fa-trash-can"></i>
+                            Remove
+                        </button>
+                        <button id="toggle-tags-button" class="menu-item-button" data-action="toggle tags">
+                            Show tags 
                         </button>
                     </div>
-                    <p id="lightbox-date"></p>
+
+                    <!-- MEDIA -->
+                    <div id="lightbox-media">
+                        <!-- IMAGE OR VIDEO -->
+                        <img id="lightbox-image" src="" alt="" style="display:none;">
+                        <video id="lightbox-video" style="display:none;" autoplay loop controls>
+                            <source src="" type="video/mp4">
+                        </video>
+
+                        <!-- CAPTION -->
+                        <div id="lightbox-caption">
+                            <p id="lightbox-caption-title"></p>
+                            <p id="lightbox-caption-date"></p>
+                        </div>
+                    </div>
+
+                    <div id="lightbox-addtag-popup"></div>
+
                 </div>
 
+                <!-- TAGS -->
                 <div id="lightbox-tags"></div>
             </div>
         </div>
+
+        <!-- GALLERY -->
+        <div id="gallery"></div>
+
     </main>
     <script>
         initGallery();

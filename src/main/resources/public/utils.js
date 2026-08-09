@@ -4,6 +4,9 @@ const NUM_COLUMNS = window.innerWidth/400;
 const columns = [];
 const column_heights = [];
 
+const TAG_HEIGHT = 20;
+const TAG_MARGIN = 2;
+
 window.addEventListener("DOMContentLoaded", (event) => {
     const usericon = document.getElementById("usericon");
     usericon.addEventListener("click", (event) => {
@@ -11,34 +14,25 @@ window.addEventListener("DOMContentLoaded", (event) => {
     });
 });
 
-var currentItem = null;
-document.addEventListener("click", (e) => {
-    const btn = e.target.closest(".menu-item");
-    if (btn) {
-        console.log(`Clicked ${currentItem.id}`, btn.dataset.action);
-        switch (btn.dataset.action) {
-            case "delete":
-                deleteContent(currentItem);
-                break;
-            case "rename":
-                renameContent(currentItem);
-                break;
-            case "tags":
-                editContentTags(currentItem);
-                break;
-            default:
-                console.log("Unkown menu item");
-                break;
-        }
+window.addEventListener("scroll", () => {
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+        loadContent();
     }
 });
 
-document.addEventListener("click", (e) => {
-    const popup = document.getElementById("tag-popup");
-    if (!e.target.closest("#tag-popup") && !e.target.closest("[data-action='tags']")) {
-        popup.style.display = "none";
-    }
-});
+// document.addEventListener("click", (e) => {
+//     const popup = document.getElementById("tag-popup");
+//     if (!e.target.closest("#tag-popup") && !e.target.closest("[data-action='tags']")) {
+//         popup.style.display = "none";
+//     }
+// });
+//
+
+/*
+ * =============================================================================
+ *                                 GALLERY 
+ * =============================================================================
+ */
 
 const pageObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
@@ -126,42 +120,122 @@ async function loadContent() {
     loading = false;
 }
 
+/*
+ * =============================================================================
+ *                                LIGHTBOX 
+ * =============================================================================
+ */
+
 function initLightbox() {
     const lightbox = document.getElementById("lightbox");
-    const menu = document.getElementById("lightbox-menu-btn")
+    const menu_button = document.getElementById("lightbox-menu-button");
+    const menu_popup = document.getElementById("lightbox-menu-popup");
+    const tags_bar = document.getElementById("lightbox-tags");
+    const toggle_tags_button = document.getElementById("toggle-tags-button");
+    const lightbox_image = document.getElementById("lightbox-image");
+    const lightbox_video = document.getElementById("lightbox-video");
+    const lightbox_caption = document.getElementById("lightbox-caption");
+    const lightbox_caption_title = document.getElementById("lightbox-caption-title");
+    const lightbox_caption_date = document.getElementById("lightbox-caption-date");
 
-    lightbox.addEventListener("click", (event) => {
-        if (event.target === lightbox) {
-            lightbox.style.display = "none";
-            document.getElementById("lightbox-img").src = "";
-            document.getElementById("lightbox-video").src = "";
+    function closeMenuPopup() {
+        menu_popup.style.display = "none";
+        menu_button.style.display = "flex";
+    }
+
+    function openMenuPopup() {
+        menu_popup.style.display = "flex";
+        menu_button.style.display = "none";
+    }
+
+    function toggleMenuPopup() {
+        if (menu_popup.style.display == "flex") {
+            closeMenuPopup();
+        }
+        else {
+            openMenuPopup();
+        }
+    }
+
+    function toggleTagsBar() {
+        if (tags_bar.style.display == "inline-flex") {
+            tags_bar.style.display = "none";
+            toggle_tags_button.innerHTML = "Show tags";
+        }
+        else {
+            tags_bar.style.display = "inline-flex";
+            toggle_tags_button.innerHTML = "Hide tags";
+        }
+    }
+
+    window.addEventListener("keydown", (e) => {
+        console.log(e.key);
+        if (e.key == "Escape") {
+            closeMenuPopup();
+            closeLightbox();
         }
     });
-    lightbox.addEventListener("keydown", (event) => {
-        if (event.code == 'Escape') {
-            lightbox.style.display = "none";
-            document.getElementById("lightbox-img").src = "";
-            document.getElementById("lightbox-video").src = "";
+
+    lightbox.addEventListener("click", (e) => {
+        if (e.target == menu_button) {
+            toggleMenuPopup();
+        }
+        else if (e.target == menu_popup) {}
+        else if (e.target.classList.contains("menu-item-button")) {
+            const action = e.target.dataset.action;
+            switch (action) {
+                case "rename":
+                    renameContent(currentItem);
+                    closeMenuPopup();
+                    break;
+                case "add tags":
+                    addTag();
+                    break;
+                case "remove":
+                    deleteContent(currentItem);
+                    closeMenuPopup();
+                    closeLightbox();
+                    break;
+                case "toggle tags":
+                    toggleTagsBar();
+                    break;
+                default:
+                    console.log("UNKOWN ACTION: "+action);
+                    break;
+            }
+        }
+        else if (e.target == lightbox_image || e.target == lightbox_video) {
+            closeMenuPopup();
+        }
+        else if (e.target == lightbox_caption) {}
+        else if (e.target == lightbox_caption_title) {
+            renameContent(currentItem);
+        }
+        else if (e.target == lightbox_caption_date) {}
+        else {
+            closeMenuPopup();
+            closeLightbox();
         }
     });
-    menu.addEventListener("click", (e) => {
-        e.stopPropagation();
-        document.getElementById("lightbox-menu-popup").classList.toggle("open");
-    });
+}
 
-    // Close menu when clicking outside
-    lightbox.addEventListener("click", () => {
-        document.getElementById("lightbox-menu-popup").classList.remove("open");
-    });
-
+function closeLightbox() {
+    const lightbox = document.getElementById("lightbox");
+    document.getElementById("lightbox-image").src = "";
+    document.getElementById("lightbox-video").src = "";
+    lightbox.style.display = "none";
+    document.body.style.overflow = ""; // Allow scrolling
+    // Remove all child nodes.
+    document.getElementById("lightbox-tags").innerHTML = '';
 }
 
 function openLightbox(item) {
     currentItem = item;
     const lightbox = document.getElementById("lightbox");
-    const img = document.getElementById("lightbox-img");
+    const img = document.getElementById("lightbox-image");
     const vid = document.getElementById("lightbox-video");
-    const caption = document.getElementById("lightbox-caption");
+    const title = document.getElementById("lightbox-caption-title");
+    const date = document.getElementById("lightbox-caption-date");
 
     if (item.type === "image") {
         img.src = `/api/images/${item.id}`;
@@ -173,26 +247,82 @@ function openLightbox(item) {
         img.style.display = "none";
     }
 
-    document.getElementById("lightbox-title").textContent = item.title || "Untitled";
-    document.getElementById("lightbox-date").textContent = item.taken_at || "Unknown date";
+    title.textContent = item.title || "Untitled";
+    date.textContent = item.taken_at || "Unknown date";
     lightbox.style.display = "flex";
+    document.body.style.overflow = "hidden"; // Prevent scrolling
     loadTags(item);
 }
 
-function deleteContent(item) {
-    function removeItem(item) {
-        document.getElementById("lightbox").style.display = "none";
-        document.getElementById("lightbox-video").src = "";
-        document.getElementById("lightbox-img").src = "";
-        item.element.remove();
+/*
+ * =============================================================================
+ *                               TAGS 
+ * =============================================================================
+ */
+
+function addTagToDisplay(tag) {
+    const tags = document.getElementById("lightbox-tags");
+    const max_height = document.getElementById("lightbox-image") 
+                    || document.getElementById("lightbox-video");
+    const max_length = max_height/(TAG_HEIGHT+TAG_MARGIN*2);
+    const name = tag.name;
+
+    function newColumn() {
+        const col = document.createElement("div");
+        col.className = "tag-column";
+        tags.append(col);
     }
+
+    if (tags.childNodes.length == 0) {
+        newColumn();
+    }
+
+    var i = 0;
+    while (tags.childNodes[i].childNodes.length+1 > max_length) {
+        i++;
+        if (i == tags.childNodes.length) {
+            newColumn();
+        }
+    }
+
+    // el.innerHTML = `${tag.name}<span class="tag-remove" data-tag="${tag.name}">✕</span>`;
+    // el.querySelector(".tag-remove").onclick = async () => {
+    //     await fetch(`/api/tags/${item.id}/${encodeURIComponent(tag.name)}`, { method: "DELETE" });
+    //     await loadTags(item);
+    // };
+
+    const display_tag = document.createElement("button");
+    display_tag.className = "tag";
+    display_tag.innerHTML = name;
+    display_tag.style.height = TAG_HEIGHT+"px";
+    display_tag.style.margin = TAG_MARGIN+"px";
+    tags.childNodes[i].append(display_tag);
+}
+
+async function loadTags(item) {
+    const res = await fetch(`/api/tags/${item.id}`);
+    const tags = await res.json();
+    console.log(tags);
+    tags.forEach(tag => {
+        addTagToDisplay(tag);
+    });
+}
+
+
+/*
+ * =============================================================================
+ *                             Content Manipulation
+ * =============================================================================
+ */
+
+function deleteContent(item) {
     if (item.type === "image") {
         fetch(`/api/images/${item.id}/delete`);
-        removeItem(item);
+        item.element.remove();
     }
     else if (item.type === "video") {
         fetch(`/api/videos/${item.id}/delete`);
-        removeItem(item);
+        item.element.remove();
     }
     else {
         console.log("Unknown type of content to delete.");
@@ -200,24 +330,24 @@ function deleteContent(item) {
 }
 
 function renameContent(item) {
-    const titleEl = document.getElementById("lightbox-title");
-    const original = titleEl.textContent;
+    const title_elem = document.getElementById("lightbox-caption-title");
+    const original = title_elem.textContent;
 
-    titleEl.contentEditable = "true";
-    titleEl.focus();
+    title_elem.contentEditable = "true";
+    title_elem.focus();
 
     // Select all text
     const range = document.createRange();
-    range.selectNodeContents(titleEl);
+    range.selectNodeContents(title_elem);
     window.getSelection().removeAllRanges();
     window.getSelection().addRange(range);
 
     async function onKey(e) {
         if (e.key === "Enter") {
             e.preventDefault();
-            titleEl.contentEditable = "false";
-            titleEl.removeEventListener("keydown", onKey);
-            const newTitle = titleEl.textContent.trim();
+            title_elem.contentEditable = "false";
+            title_elem.removeEventListener("keydown", onKey);
+            const newTitle = title_elem.textContent.trim();
             if (newTitle !== original) {
                 item.title = newTitle;
                 if (item.type === "image") {
@@ -237,94 +367,77 @@ function renameContent(item) {
             }
         }
         if (e.key === "Escape") {
-            titleEl.contentEditable = "false";
-            titleEl.removeEventListener("keydown", onKey);
-            titleEl.textContent = original;
+            title_elem.contentEditable = "false";
+            title_elem.removeEventListener("keydown", onKey);
+            title_elem.textContent = original;
         }
     }
-    titleEl.addEventListener("keydown", onKey);
+    title_elem.addEventListener("keydown", onKey);
 }
 
-function editContentTags(item) {
-    const popup = document.getElementById("tag-popup");
-    popup.style.display = popup.style.display === "none" ? "block" : "none";
-    if (popup.style.display === "none") return;
-
-    const search = document.getElementById("tag-search");
-    search.value = "";
-    search.oninput = null; // remove old handler
-    search.replaceWith(search.cloneNode(true)); // remove old keydown listeners
-    const freshSearch = document.getElementById("tag-search");
-
-    freshSearch.focus();
-    renderTagResults("", item);
-
-    freshSearch.oninput = () => renderTagResults(freshSearch.value.trim(), item);
-    // freshSearch.addEventListener("keydown", async (e) => {
-    //     if (e.key === "Enter" && freshSearch.value.trim()) {
-    //         await addTag(item, freshSearch.value.trim());
-    //         freshSearch.value = "";
-    //         await renderTagResults("", item);
-    //     }
-    // });
+function addTag() {
+    const addtag_popup = document.getElementById("lightbox-addtag-popup");
+    addtag_popup.style.display = "block";
+    addtag_popup.innerHTML = "HELLO LOL";
 }
 
-async function renderTagResults(likeName, item) {
-    if (likeName === "") {
-        return;
-    }
-    const res = await fetch(`/api/tags?q=${encodeURIComponent(likeName)}`);
-    const tags = await res.json();
-    const container = document.getElementById("tag-results");
-    container.innerHTML = "";
+// function editContentTags(item) {
+//     const popup = document.getElementById("tag-popup");
+//     popup.style.display = popup.style.display === "none" ? "block" : "none";
+//     if (popup.style.display === "none") return;
+//
+//     const search = document.getElementById("tag-search");
+//     search.value = "";
+//     search.oninput = null; // remove old handler
+//     search.replaceWith(search.cloneNode(true)); // remove old keydown listeners
+//     const freshSearch = document.getElementById("tag-search");
+//
+//     freshSearch.focus();
+//     renderTagResults("", item);
+//
+//     freshSearch.oninput = () => renderTagResults(freshSearch.value.trim(), item);
+//     // freshSearch.addEventListener("keydown", async (e) => {
+//     //     if (e.key === "Enter" && freshSearch.value.trim()) {
+//     //         await addTag(item, freshSearch.value.trim());
+//     //         freshSearch.value = "";
+//     //         await renderTagResults("", item);
+//     //     }
+//     // });
+// }
 
-    tags.forEach(tag => {
-        const btn = document.createElement("button");
-        btn.className = "tag-result";
-        btn.textContent = tag.name;
-        btn.onclick = () => addTag(item, tag.name);
-        container.appendChild(btn);
-    });
+// async function renderTagResults(likeName, item) {
+//     if (likeName === "") {
+//         return;
+//     }
+//     const res = await fetch(`/api/tags?q=${encodeURIComponent(likeName)}`);
+//     const tags = await res.json();
+//     const container = document.getElementById("tag-results");
+//     container.innerHTML = "";
+//
+//     tags.forEach(tag => {
+//         const btn = document.createElement("button");
+//         btn.className = "tag-result";
+//         btn.textContent = tag.name;
+//         btn.onclick = () => addTag(item, tag.name);
+//         container.appendChild(btn);
+//     });
+//
+//     if (likeName && !tags.find(t => t.name === likeName)) {
+//         const btn = document.createElement("button");
+//         btn.className = "tag-result";
+//         btn.textContent = `+ Create "${likeName}"`;
+//         btn.onclick = () => addTag(item, likeName);
+//         container.appendChild(btn);
+//     }
+// }
 
-    if (likeName && !tags.find(t => t.name === likeName)) {
-        const btn = document.createElement("button");
-        btn.className = "tag-result";
-        btn.textContent = `+ Create "${likeName}"`;
-        btn.onclick = () => addTag(item, likeName);
-        container.appendChild(btn);
-    }
-}
-
-async function addTag(item, tagName) {
-    await fetch(`/api/tags/${item.id}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tag: tagName })
-    });
-    document.getElementById("tag-popup").style.display = "none";
-    await loadTags(item);
-}
-
-async function loadTags(item) {
-    const res = await fetch(`/api/tags/${item.id}`);
-    const tags = await res.json();
-    console.log(tags);
-    const container = document.getElementById("lightbox-tags");
-    container.innerHTML = "";
-    tags.forEach(tag => {
-        const el = document.createElement("div");
-        el.className = "tag";
-        el.innerHTML = `${tag.name}<span class="tag-remove" data-tag="${tag.name}">✕</span>`;
-        el.querySelector(".tag-remove").onclick = async () => {
-            await fetch(`/api/tags/${item.id}/${encodeURIComponent(tag.name)}`, { method: "DELETE" });
-            await loadTags(item);
-        };
-        container.appendChild(el);
-    });
-}
-
-window.addEventListener("scroll", () => {
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
-        loadContent();
-    }
-});
+// async function addTag(item, tagName) {
+//     await fetch(`/api/tags/${item.id}`, {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({ tag: tagName })
+//     });
+//     document.getElementById("tag-popup").style.display = "none";
+//     await loadTags(item);
+// }
+//
