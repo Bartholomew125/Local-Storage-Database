@@ -21,6 +21,7 @@ public class ContentFetcher {
         +" FROM videos UNION SELECT"
         +" id,title,taken_at,path,width,height,NULL,mimetype,views,latitude,latitudeSpan,longitude,longitudeSpan,altitude"
         +" FROM images"
+        +" WHERE deleted_at IS NULL"
         +" ORDER BY %s %s NULLS LAST"
         +" LIMIT ? OFFSET ?";
 
