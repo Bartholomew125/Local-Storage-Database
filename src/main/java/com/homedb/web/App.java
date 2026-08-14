@@ -120,39 +120,39 @@ public class App {
             )).toList());
         });
 
-        app.get("/api/images", ctx -> {
-            int page   = ctx.queryParamAsClass("page", Integer.class).getOrDefault(0);
-            int limit  = 20;
-            int offset = page * limit;
-
-            List<ImageContent> images = imagesTable.select(limit, offset, "taken_at");
-
-            ctx.json(images.stream()
-                    .map(img -> Map.of(
-                        "id",       img.getId(),
-                        "title",    img.getMetaData().title,
-                        "taken_at", new MyDate(img.getMetaData().takenAt, TimeUnit.SECONDS).toString(),
-                        "width",    img.getMetaData().width,
-                        "height",   img.getMetaData().height
-            )).toList());
-        });
-
-        app.get("/api/videos", ctx -> {
-            int page   = ctx.queryParamAsClass("page", Integer.class).getOrDefault(0);
-            int limit  = 20;
-            int offset = page * limit;
-
-            List<VideoContent> videos = videosTable.select(limit, offset, "taken_at");
-
-            ctx.json(videos.stream()
-                    .map(vid -> Map.of(
-                        "id",       vid.getId(),
-                        "title",    vid.getMetaData().title,
-                        "taken_at", new MyDate(vid.getMetaData().takenAt, TimeUnit.SECONDS).toString(),
-                        "width",    vid.getMetaData().width,
-                        "height",   vid.getMetaData().height
-            )).toList());
-        });
+        // app.get("/api/images", ctx -> {
+        //     int page   = ctx.queryParamAsClass("page", Integer.class).getOrDefault(0);
+        //     int limit  = 20;
+        //     int offset = page * limit;
+        //
+        //     List<ImageContent> images = imagesTable.select(limit, offset, "taken_at");
+        //
+        //     ctx.json(images.stream()
+        //             .map(img -> Map.of(
+        //                 "id",       img.getId(),
+        //                 "title",    img.getMetaData().title,
+        //                 "taken_at", new MyDate(img.getMetaData().takenAt, TimeUnit.SECONDS).toString(),
+        //                 "width",    img.getMetaData().width,
+        //                 "height",   img.getMetaData().height
+        //     )).toList());
+        // });
+        //
+        // app.get("/api/videos", ctx -> {
+        //     int page   = ctx.queryParamAsClass("page", Integer.class).getOrDefault(0);
+        //     int limit  = 20;
+        //     int offset = page * limit;
+        //
+        //     List<VideoContent> videos = videosTable.select(limit, offset, "taken_at");
+        //
+        //     ctx.json(videos.stream()
+        //             .map(vid -> Map.of(
+        //                 "id",       vid.getId(),
+        //                 "title",    vid.getMetaData().title,
+        //                 "taken_at", new MyDate(vid.getMetaData().takenAt, TimeUnit.SECONDS).toString(),
+        //                 "width",    vid.getMetaData().width,
+        //                 "height",   vid.getMetaData().height
+        //     )).toList());
+        // });
 
         app.get("api/images/{id}", ctx -> {
             String imageid = ctx.pathParam("id");
