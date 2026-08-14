@@ -1,5 +1,6 @@
 package com.homedb.metadata;
 
+import java.io.Console;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -24,7 +25,7 @@ public class ExifMetaDataExtractor extends AbstractMetaDataExtractor {
         for (Directory dir : metadata.getDirectories()) {
             //System.out.println("Directory: "+dir.toString());
             for (Tag tag : dir.getTags()) {
-                //System.out.println("\tTAG: "+tag.getTagName() + " = " + tag.getDescription());
+                // System.out.println("\tTAG: "+tag.getTagName() + " = " + tag.getDescription());
                 if (tag.getTagName().equals(tagName)) {
                     Object value = dir.getObject(tag.getTagType());
                     if (type.isInstance(value)) {
@@ -37,6 +38,10 @@ public class ExifMetaDataExtractor extends AbstractMetaDataExtractor {
         return Optional.empty();
     }
 
+    private static double toRadians(double degrees) {
+        return degrees * Math.PI/180;
+    }
+
     @Override
     public ContentMetaData extract() {
 
@@ -47,6 +52,7 @@ public class ExifMetaDataExtractor extends AbstractMetaDataExtractor {
             int width = 0;
             int height = 0;
             float duration = 0;
+            double rotation = 0;
 
             MimeType mimeType = MimeType.of(
                 findFirstTag(metadata, "Detected MIME Type", String.class)
@@ -59,16 +65,26 @@ public class ExifMetaDataExtractor extends AbstractMetaDataExtractor {
                 case WEBP:
                     width = findFirstTag(metadata, "Image Width", Integer.class).orElseThrow();
                     height = findFirstTag(metadata, "Image Height", Integer.class).orElseThrow();
+                    rotation = findFirstTag(metadata, "Rotation", Double.class).orElse(0.0);
                     break;
                 case MP4:
                     width = findFirstTag(metadata, "Width", Integer.class).orElseThrow();
                     height = findFirstTag(metadata, "Height", Integer.class).orElseThrow();
                     duration = (float) findFirstTag(metadata, "Duration", Long.class).orElseThrow();
+                    rotation = findFirstTag(metadata, "Rotation", Double.class).orElse(0.0);
                     float mediaTimeScale = (float) findFirstTag(metadata, "Media Time Scale", Long.class).orElseThrow();
                     duration = duration/mediaTimeScale;
                     break;
                 default:
                     throw new RuntimeException("Unknown mime type: "+mimeType);
+            }
+
+            // Calculate rotated width
+            if (rotation != 0.0) {
+                int new_width = (int) Math.abs(Math.cos(toRadians(rotation))*width+Math.sin(toRadians(rotation))*height);
+                int new_height = (int) Math.abs(Math.sin(toRadians(rotation))*width+Math.cos(toRadians(rotation))*height);
+                width = new_width;
+                height = new_height;
             }
 
             ContentMetaData contentMetaData = new ContentMetaData();
