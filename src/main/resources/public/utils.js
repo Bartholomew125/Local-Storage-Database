@@ -43,67 +43,131 @@ const pageObserver = new IntersectionObserver((entries) => {
     });
 }, { rootMargin: "0px 0px 500px 0px" });  // fire 500px before it enters the viewport
 
+var GALLERY = null;
 function initGallery() {
-    const gallery = document.getElementById("gallery");
-    gallery.style.display = "flex";
-    gallery.style.gap = "5px";
+    GALLERY = document.getElementById("gallery");
+}
 
-    for (let i = 0; i < NUM_COLUMNS; i++) {
-        const col = document.createElement("div");
-        col.style.flex = "1";
-        col.style.display = "flex";
-        col.style.flexDirection = "column";
-        col.style.gap = "5px";
-        col.style.width = `${100 / NUM_COLUMNS}`;
-        col.style.flexShrink = "0";
-        col.style.minWidth = "0";
-        col.style.overflow = "hidden";
-        gallery.appendChild(col);
-        columns.push(col);
-        column_heights.push(0);
+const MAX_THUMBNAIL_HEIGHT = 500;
+const MIN_THUMBNAIL_HEIGHT = 300;
+const THUMBNAIL_MARGIN = 4;
+const VIEWPORT_WIDTH = window.visualViewport.width;
+const MAX_ROW_WIDTH = 0.9*VIEWPORT_WIDTH;
+
+function scaleWidth(current_width, current_height, desired_height) {
+    return desired_height/current_height * current_width;
+}
+
+function numFromPxStr(pixel_value) {
+    return parseFloat(new String(pixel_value).replace("px", ""))
+}
+
+var current_group_date = null;
+var current_thumbnail_row_container = null;
+var current_thumbnail_row = null;
+
+function newThumbnailRow() {
+    var row = document.createElement("row");
+    row.className = "thumbnail-row";
+    // Save current width of container, in row.
+    row.currentWidth = 0;
+    return row;
+}
+
+function newThumbnailRowContainer() {
+    const container = document.createElement("div");
+    container.className = "thumbnail-row-container";
+    container.style.width = MAX_ROW_WIDTH+"px";
+    const display_date = current_group_date;
+    container.innerHTML = display_date;
+    return container;
+}
+
+function refactorThumbnailRow() {
+    var missing_width = MAX_ROW_WIDTH;
+    for (const thumbnail_container of current_thumbnail_row.childNodes) {
+        missing_width -= numFromPxStr(thumbnail_container.style.width);
+        missing_width -= THUMBNAIL_MARGIN * 2;
+    }
+    const total_width = MAX_ROW_WIDTH-missing_width;
+    const width_scale_factor = MAX_ROW_WIDTH/total_width;
+    for (const thumbnail_container of current_thumbnail_row.childNodes) {
+        thumbnail_container.style.width = numFromPxStr(thumbnail_container.style.width) * width_scale_factor + "px";
+        var new_height = numFromPxStr(thumbnail_container.style.height) * width_scale_factor;
+        if (new_height > MAX_THUMBNAIL_HEIGHT) {
+            thumbnail_container.style.width = scaleWidth(numFromPxStr(thumbnail_container.style.width), new_height, MAX_THUMBNAIL_HEIGHT) + "px";
+            new_height = MAX_THUMBNAIL_HEIGHT;
+        }
+        thumbnail_container.style.height = new_height + "px";
+    }
+}
+
+function getDate(datetime) {
+    if (datetime == null) {
+        return "Unknown Date";
+    }
+    else {
+        return datetime.split(" ")[0];
     }
 }
 
 function addContentToGallery(item) {
-    const container = document.createElement("div");
-    container.className = "thumbnail-container";
-    container.addEventListener("click", () => openLightbox(item));
-    container.style.flexShrink = "0";
-    container.style.overflow = "hidden";
+    if (getDate(item.taken_at) != current_group_date) {
+        if (current_group_date != null) { 
+            refactorThumbnailRow();
+            current_thumbnail_row_container.appendChild(current_thumbnail_row);
+            GALLERY.appendChild(current_thumbnail_row_container);
+        }
+        current_group_date = getDate(item.taken_at);
+        // Create new row and container for rows
+        current_thumbnail_row = newThumbnailRow();
+        current_thumbnail_row_container = newThumbnailRowContainer();
+        current_thumbnail_row_container.appendChild(current_thumbnail_row);
+    }
+
+    const img_scaled_width = scaleWidth(item.width, item.height, MIN_THUMBNAIL_HEIGHT);
+
+    if (img_scaled_width + current_thumbnail_row.currentWidth > MAX_ROW_WIDTH) {
+        console.log("NO SPACE");
+        refactorThumbnailRow();
+        current_thumbnail_row_container.appendChild(current_thumbnail_row);
+        current_thumbnail_row = newThumbnailRow();
+    }
+
+    const thumbnail_container = document.createElement("div");
+    thumbnail_container.className = "thumbnail-container";
+    thumbnail_container.style.height = MIN_THUMBNAIL_HEIGHT+"px";
+    thumbnail_container.style.width = img_scaled_width+"px";
+    thumbnail_container.style.margin = THUMBNAIL_MARGIN+"px";
 
     const thumbnail = document.createElement("img");
-    if (item.type == "video") {
-        thumbnail.src = `/api/videos/${item.id}/thumbnail`;
-    } else {
-        thumbnail.src = `/api/images/${item.id}/thumbnail`;
-    }
+    thumbnail.src = item.type === "video" 
+        ? `/api/videos/${item.id}/thumbnail`
+        : `/api/images/${item.id}/thumbnail`;
+    thumbnail.className = "thumbnail";
     thumbnail.alt = item.title || "untitled";
-    thumbnail.style = "width: 100%; display: block;";
     thumbnail.loading = "lazy"
-    container.appendChild(thumbnail);
+    thumbnail.addEventListener("click", () => openLightbox(item));
+
+    thumbnail_container.appendChild(thumbnail);
 
     if (item.type === "video") {
         const play = document.createElement("div");
         play.className = "play-button";
-        container.appendChild(play);
+        thumbnail_container.appendChild(play);
     }
 
-    const frac_height = item.height / item.width;
-    const shortest_idx = column_heights.indexOf(Math.min(...column_heights));
-    columns[shortest_idx].appendChild(container);
-    column_heights[shortest_idx] += frac_height;
-    
-    item.element = container;
-
-    return container;
+    current_thumbnail_row.appendChild(thumbnail_container);
+    current_thumbnail_row.currentWidth += img_scaled_width;
+    return thumbnail_container;
 }
 
 async function loadContent() {
     if (loading) return;
     loading = true;
 
-    var sortBy = document.getElementById("sortBy").value;
-    var ordering = document.getElementById("ordering").value;
+    const sortBy = document.getElementById("sortBy").value;
+    const ordering = document.getElementById("ordering").value;
 
     const res = await fetch(`/api/gallery?page=${page}&sortBy=${sortBy}&ordering=${ordering}`);
     const content = await res.json();
@@ -169,7 +233,6 @@ function initLightbox() {
     }
 
     window.addEventListener("keydown", (e) => {
-        console.log(e.key);
         if (e.key == "Escape") {
             closeMenuPopup();
             closeLightbox();
@@ -302,7 +365,6 @@ function addTagToDisplay(tag) {
 async function loadTags(item) {
     const res = await fetch(`/api/tags/${item.id}`);
     const tags = await res.json();
-    console.log(tags);
     tags.forEach(tag => {
         addTagToDisplay(tag);
     });
@@ -316,6 +378,7 @@ async function loadTags(item) {
  */
 
 function deleteContent(item) {
+    console.log(item);
     if (item.type === "image") {
         fetch(`/api/images/${item.id}/delete`);
         item.element.remove();

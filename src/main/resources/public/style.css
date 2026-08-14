@@ -22,6 +22,12 @@
     --border-color: purple;
     --background-blur: blur(4px);
     --rich-yellow: #e1c022;
+
+    --image-row-container-backround: rgba(255,255,255,0.2);
+}
+
+body {
+    background-image: url("rainbow-tile.jpg");
 }
 
 h1 {
@@ -76,25 +82,34 @@ button {
 }
 
 #gallery {
-    column-count: auto;
-    column-gap: 5px;
-    column-width: 200px;
-    margin: 20px;
+    display: flex;
+    flex-direction: column;
 }
 
-#gallery img {
-    width: 100%;
-    display: block;
-    margin-bottom: 5px;
-    break-inside: avoid;
+.thumbnail-row-container {
+    font-size: 30px;
+    color: purple;
+    display: flex;
+    flex-direction: column;
+    width: 95vw;
+    margin: 20px;
+    background: var(--image-row-container-backround);
+    box-shadow: 0px 0px 10px 10px var(--image-row-container-backround);
+    backdrop-filter: var(--background-blur);
 }
 
 .thumbnail-container {
-    position: relative;
     cursor: pointer;
+    position: relative; 
+    display: inline-block; 
+    flex-shrink: 0;
+}
+
+.thumbnail {
+    height: 100%;
     width: 100%;
+    object-fit: cover;
     display: block;
-    max-width: 100%;
 }
 
 .play-button {
