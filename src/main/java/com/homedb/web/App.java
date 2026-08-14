@@ -61,24 +61,24 @@ public class App {
         }).start(PORT);
 
         // Protect all pages and API routes
-        app.before(ctx -> {
-            String path = ctx.path();
-            if (path.equals("/login")          ||
-                path.equals("/login.html")     ||
-                path.equals("/api/login")      ||
-                path.endsWith(".css")          ||
-                path.endsWith(".js")           ||
-                path.startsWith("/components")) return;
-
-            String token = ctx.cookie("session");
-            if (token == null || !SESSIONS.contains(token)) {
-                if (path.startsWith("/api")) {
-                    throw new UnauthorizedResponse();
-                } else {
-                    ctx.redirect("/login.html");
-                }
-            }
-        });
+        // app.before(ctx -> {
+        //     String path = ctx.path();
+        //     if (path.equals("/login")          ||
+        //         path.equals("/login.html")     ||
+        //         path.equals("/api/login")      ||
+        //         path.endsWith(".css")          ||
+        //         path.endsWith(".js")           ||
+        //         path.startsWith("/components")) return;
+        //
+        //     String token = ctx.cookie("session");
+        //     if (token == null || !SESSIONS.contains(token)) {
+        //         if (path.startsWith("/api")) {
+        //             throw new UnauthorizedResponse();
+        //         } else {
+        //             ctx.redirect("/login.html");
+        //         }
+        //     }
+        // });
 
         app.post("/api/login", ctx -> {
             String username = ctx.formParam("username");
