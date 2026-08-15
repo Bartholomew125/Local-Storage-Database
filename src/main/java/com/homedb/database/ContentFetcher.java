@@ -16,14 +16,15 @@ public class ContentFetcher {
 
     private final Database database;
 
-    private static final String FETCH_ALL_SQL = "SELECT"
-        +" id,title,taken_at,path,width,height,duration,mimetype,views,latitude,latitudeSpan,longitude,longitudeSpan,altitude"
-        +" FROM videos UNION SELECT"
-        +" id,title,taken_at,path,width,height,NULL,mimetype,views,latitude,latitudeSpan,longitude,longitudeSpan,altitude"
-        +" FROM images"
-        +" WHERE deleted_at IS NULL"
-        +" ORDER BY %s %s NULLS LAST"
-        +" LIMIT ? OFFSET ?";
+    private static final String FETCH_ALL_SQL = readFetchAllPath();
+    private static String readFetchAllPath() {
+        try {
+            return Files.readString(Config.FETCH_ALL_PATH);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
 
     public ContentFetcher(Database database) {
         this.database = database;
