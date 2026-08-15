@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import com.homedb.RegEx;
+import com.homedb.Utils;
 import com.homedb.metadata.ContentMetaData;
 import com.homedb.metadata.ExifMetaDataExtractor;
 import com.homedb.metadata.GoogleMetaDataExtractor;
@@ -79,11 +80,6 @@ public class ContentInputReader {
 
     private static String generateId(Path file, ContentMetaData metaData) throws NoSuchAlgorithmException, IOException {
         String input = file.getFileName().toString() + metaData.takenAt;
-        byte[] hash = MessageDigest
-            .getInstance("SHA-1")
-            .digest(input.getBytes());
-        StringBuilder hex = new StringBuilder();
-        for (byte b : hash) hex.append(String.format("%02x", b));
-        return hex.toString();
+        return Utils.hashSHA1(input);
     }
 }
