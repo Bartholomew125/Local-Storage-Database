@@ -23,7 +23,12 @@ public class MetaDataExtractorService extends AbstractMetaDataExtractor {
         extractors.forEach( extractor -> {
             extractor.setFile(this.getFile());
             ContentMetaData subMetaData = extractor.extract();
-            builder.append(subMetaData);
+            if (subMetaData != null) {
+                builder.append(subMetaData);
+            }
+            else {
+                System.out.println("Failed to use "+extractor.getClass()+" with "+this.getFile()); 
+            }
         });
         return builder.get();
     }
