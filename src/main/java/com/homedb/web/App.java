@@ -3,18 +3,15 @@ package com.homedb.web;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import com.homedb.LimitedInputStream;
 import com.homedb.MyDate;
+import com.homedb.Utils;
 import com.homedb.content.Content;
 import com.homedb.content.ImageContent;
 import com.homedb.content.Tag;
@@ -24,6 +21,7 @@ import com.homedb.database.Database;
 import com.homedb.database.ImagesTable;
 import com.homedb.database.Table;
 import com.homedb.database.TagsTable;
+import com.homedb.database.UsersTable;
 import com.homedb.database.VideosTable;
 
 import io.javalin.Javalin;
@@ -33,20 +31,7 @@ public class App {
 
     private static final int PORT = 8080;
 
-    private static final Set<String> SESSIONS = ConcurrentHashMap.newKeySet();
-    private static final String USERNAME = "andreas";
-    private static final String PASSWORD_HASH = sha256("1234");
-
-    private static String sha256(String input) {
-        try {
-            byte[] hash = MessageDigest.getInstance("SHA-256").digest(input.getBytes());
-            StringBuilder hex = new StringBuilder();
-            for (byte b : hash) hex.append(String.format("%02x", b));
-            return hex.toString();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private static final ConcurrentHashMap<String, Integer> SESSIONS = new ConcurrentHashMap<>();
 
     public static void main(String[] args) {
 
@@ -54,6 +39,7 @@ public class App {
         Table<ImageContent> imagesTable = new ImagesTable(database);
         Table<VideoContent> videosTable = new VideosTable(database);
         TagsTable tagsTable = new TagsTable(database);
+        UsersTable usersTable = new UsersTable(database);
         ContentFetcher cf = new ContentFetcher(database);
 
         Javalin app = Javalin.create(config -> {
@@ -61,31 +47,33 @@ public class App {
         }).start(PORT);
 
         // Protect all pages and API routes
-        // app.before(ctx -> {
-        //     String path = ctx.path();
-        //     if (path.equals("/login")          ||
-        //         path.equals("/login.html")     ||
-        //         path.equals("/api/login")      ||
-        //         path.endsWith(".css")          ||
-        //         path.endsWith(".js")           ||
-        //         path.startsWith("/components")) return;
-        //
-        //     String token = ctx.cookie("session");
-        //     if (token == null || !SESSIONS.contains(token)) {
-        //         if (path.startsWith("/api")) {
-        //             throw new UnauthorizedResponse();
-        //         } else {
-        //             ctx.redirect("/login.html");
-        //         }
-        //     }
-        // });
+        app.before(ctx -> {
+            String path = ctx.path();
+            if (path.equals("/login")          ||
+                path.equals("/login.html")     ||
+                path.equals("/api/login")      ||
+                path.endsWith(".css")          ||
+                path.endsWith(".js")           ||
+                path.startsWith("/components")) return;
+
+            String token = ctx.cookie("session");
+            if (token == null || !SESSIONS.containsKey(token)) {
+                if (path.startsWith("/api")) {
+                    throw new UnauthorizedResponse();
+                } else {
+                    ctx.redirect("/login.html");
+                }
+            }
+        });
 
         app.post("/api/login", ctx -> {
             String username = ctx.formParam("username");
             String password = ctx.formParam("password");
-            if (USERNAME.equals(username) && PASSWORD_HASH.equals(sha256(password))) {
+            String password_hash = Utils.hashSHA1(password);
+            Integer user_id = usersTable.getId(username, password_hash);
+            if (user_id != null) {
                 String token = UUID.randomUUID().toString();
-                SESSIONS.add(token);
+                SESSIONS.put(token, user_id);
                 ctx.cookie("session", token);
                 ctx.status(200);
             } else {
@@ -106,7 +94,12 @@ public class App {
             int limit  = 20;
             int offset = page * limit;
 
-            List<Content> content = cf.fetch(limit, offset, sortBy, ordering);
+            String token = ctx.cookie("session");
+            int user_id = SESSIONS.get(token);
+
+            System.out.println(SESSIONS+" "+user_id);
+
+            List<Content> content = cf.fetch(limit, offset, sortBy, ordering, user_id);
 
             ctx.json(content.stream()
                     .map(img -> Map.of(

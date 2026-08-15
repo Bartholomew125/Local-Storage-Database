@@ -1,5 +1,7 @@
 package com.homedb.database;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -7,6 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.homedb.Config;
 import com.homedb.MimeType;
 import com.homedb.content.Content;
 import com.homedb.content.GeneralContent;
@@ -30,12 +33,14 @@ public class ContentFetcher {
         this.database = database;
     }
 
-    public List<Content> fetch(int limit, int offset, String sortBy, String ordering) {
+    public List<Content> fetch(int limit, int offset, String sortBy, String ordering, int user_id) {
         List<Content> content = new ArrayList<>();
         String sql = FETCH_ALL_SQL.formatted(sortBy, ordering);
         try(PreparedStatement stmt = this.database.createPreparedStatement(sql)) {
-            stmt.setInt(1, limit);
-            stmt.setInt(2, offset);
+            stmt.setInt(1, user_id);
+            stmt.setInt(2, user_id);
+            stmt.setInt(3, limit);
+            stmt.setInt(4, offset);
             ResultSet res = stmt.executeQuery();
             while (res.next()) {
                 ContentMetaData metaData = new ContentMetaData();

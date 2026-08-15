@@ -57,7 +57,7 @@ CREATE TABLE tag_ids (
 CREATE TABLE users (
     id INTEGER PRIMARY KEY NOT NULL,
     username VARCHAR(64) NOT NULL,
-    password_hash CHAR(64) NOT NULL,
+    password_hash CHAR(40) NOT NULL,
 );
 
 CREATE TABLE user_images (
