@@ -35,28 +35,41 @@ public class ImagesTable extends AbstractTable<ImageContent> {
         ));
     }
 
+    private static void addToStatement(PreparedStatement stmt, ImageContent item, int offset) throws SQLException {
+        stmt.setString(offset+1, item.getId());
+        stmt.setString(offset+2, item.getMetaData().title);
+        stmt.setLong  (offset+3, item.getMetaData().takenAt);
+        stmt.setString(offset+4, item.getPath().toString());
+        stmt.setInt   (offset+5, item.getMetaData().width);
+        stmt.setInt   (offset+6, item.getMetaData().height);
+        stmt.setString(offset+7, item.getMetaData().mimeType.toString());
+        stmt.setInt   (offset+8, item.getMetaData().views);
+        if (item.getMetaData().geoData != null) {
+            stmt.setFloat (offset+9, item.getMetaData().geoData.latitude());
+            stmt.setFloat (offset+10, item.getMetaData().geoData.latitudeSpan());
+            stmt.setFloat (offset+11, item.getMetaData().geoData.longitude());
+            stmt.setFloat (offset+12, item.getMetaData().geoData.longitudeSpan());
+            stmt.setFloat (offset+13, item.getMetaData().geoData.altitude());
+        }
+        else {
+            stmt.setNull (offset+9, Types.FLOAT);
+            stmt.setNull (offset+10, Types.FLOAT);
+            stmt.setNull (offset+11, Types.FLOAT);
+            stmt.setNull (offset+12, Types.FLOAT);
+            stmt.setNull (offset+13, Types.FLOAT);
+        }
+        if (item.getDeletedAt() == null) {
+            stmt.setNull(offset+14, Types.TIMESTAMP);
+        }
+        else {
+            stmt.setLong(offset+14, item.getDeletedAt());
+        }
+    }
+
     @Override
     public int insert(ImageContent item) {
         try(PreparedStatement stmt = this.createPreparedStatement(this.INSERT_SQL)) {
-            stmt.setString(1, item.getId());
-            stmt.setString(2, item.getMetaData().title);
-            stmt.setLong  (3, item.getMetaData().takenAt);
-            stmt.setString(4, item.getPath().toString());
-            stmt.setInt   (5, item.getMetaData().width);
-            stmt.setInt   (6, item.getMetaData().height);
-            stmt.setString(7, item.getMetaData().mimeType.toString());
-            stmt.setInt   (8, item.getMetaData().views);
-            stmt.setFloat (9, item.getMetaData().geoData.latitude());
-            stmt.setFloat (10, item.getMetaData().geoData.latitudeSpan());
-            stmt.setFloat (11, item.getMetaData().geoData.longitude());
-            stmt.setFloat (12, item.getMetaData().geoData.longitudeSpan());
-            stmt.setFloat (13, item.getMetaData().geoData.altitude());
-            if (item.getDeletedAt() == null) {
-                stmt.setNull(14, Types.TIMESTAMP);
-            }
-            else {
-                stmt.setLong(14, item.getDeletedAt());
-            }
+            addToStatement(stmt, item, 0);
             return stmt.executeUpdate();
         } catch (SQLException e) {
             if (e.getMessage().toString().startsWith("[SQLITE_CONSTRAINT_PRIMARYKEY]")) {
@@ -83,25 +96,7 @@ public class ImagesTable extends AbstractTable<ImageContent> {
         try(PreparedStatement stmt = this.createPreparedStatement(INSERT_ALL_SQL)) {
             int i = 0;
             for (ImageContent item : items) {
-                stmt.setString(i+1, item.getId());
-                stmt.setString(i+2, item.getMetaData().title);
-                stmt.setLong  (i+3, item.getMetaData().takenAt);
-                stmt.setString(i+4, item.getPath().toString());
-                stmt.setInt   (i+5, item.getMetaData().width);
-                stmt.setInt   (i+6, item.getMetaData().height);
-                stmt.setString(i+7, item.getMetaData().mimeType.toString());
-                stmt.setInt   (i+8, item.getMetaData().views);
-                stmt.setFloat (i+9, item.getMetaData().geoData.latitude());
-                stmt.setFloat (i+10, item.getMetaData().geoData.latitudeSpan());
-                stmt.setFloat (i+11, item.getMetaData().geoData.longitude());
-                stmt.setFloat (i+12, item.getMetaData().geoData.longitudeSpan());
-                stmt.setFloat (i+13, item.getMetaData().geoData.altitude());
-                if (item.getDeletedAt() == null) {
-                    stmt.setNull(i+14, Types.TIMESTAMP);
-                }
-                else {
-                    stmt.setLong  (i+14, item.getDeletedAt());
-                }
+                addToStatement(stmt, item, i);
                 i = i + this.columns.size();
             }
             return stmt.executeUpdate();
