@@ -17,7 +17,6 @@ public class UsersTable {
         try (PreparedStatement stmt = this.database.createPreparedStatement(sql)) {
             stmt.setString(1, username);
             stmt.setString(2, password_hash);
-            System.out.println(stmt);
             ResultSet res = stmt.executeQuery();
             int user_id = res.getInt("id");
             if (user_id > 0) {
@@ -27,5 +26,42 @@ public class UsersTable {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public int insertImage(int userId, String imageId) {
+        String sql = "INSERT INTO user_images VALUES (?, ?)";
+        try (PreparedStatement stmt = this.database.createPreparedStatement(sql)) {
+            stmt.setInt(1, userId);
+            stmt.setString(2, imageId);
+            return stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    public int insertVideo(int userId, String videoId) {
+        String sql = "INSERT INTO user_videos VALUES (?, ?)";
+        try (PreparedStatement stmt = this.database.createPreparedStatement(sql)) {
+            stmt.setInt(1, userId);
+            stmt.setString(2, videoId);
+            return stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
+
+    }
+
+    public int insertUser(String username, String passwordHash) {
+        String sql = "INSERT INTO users (username, password_hash) VALUES (?, ?)";
+        try (PreparedStatement stmt = this.database.createPreparedStatement(sql)) {
+            stmt.setString(1, username);
+            stmt.setString(2, passwordHash);
+            return stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 }

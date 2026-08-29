@@ -4,13 +4,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import com.homedb.RegEx;
@@ -22,11 +18,13 @@ import com.homedb.metadata.MetaDataExtractorService;
 
 public class ContentInputReader {
 
+
     public static Stream<Content> getContent(Path root) {
         Stream<Content> content = Stream.empty();
         Map<String, Integer> files = new ConcurrentHashMap<>();
+
         try {
-            content = Files.walk(Paths.get("input"))
+            content = Files.walk(root)
                 .filter( Files::isRegularFile )
                 .filter( f -> f.toString().matches(RegEx.contentFileRegEx) )
                 .map( file -> {

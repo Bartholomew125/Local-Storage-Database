@@ -55,19 +55,19 @@ CREATE TABLE tag_ids (
 );
 
 CREATE TABLE users (
-    id INTEGER PRIMARY KEY NOT NULL,
-    username VARCHAR(64) NOT NULL,
-    password_hash CHAR(40) NOT NULL,
+    id              INTEGER PRIMARY KEY,
+    username        VARCHAR(64) NOT NULL,
+    password_hash   CHAR(40) NOT NULL
 );
 
 CREATE TABLE user_images (
-    user_id INTEGER NOT NULL,
-    image_id CHAR(40) NOT NULL,
+    user_id     INTEGER NOT NULL,
+    image_id    CHAR(40) NOT NULL,
     PRIMARY KEY (user_id, image_id)
 );
 
 CREATE TABLE user_videos (
-    user_id INTEGER NOT NULL,
-    video_id CHAR(40) NOT NULL,
+    user_id     INTEGER NOT NULL,
+    video_id    CHAR(40) NOT NULL,
     PRIMARY KEY (user_id, video_id)
 );

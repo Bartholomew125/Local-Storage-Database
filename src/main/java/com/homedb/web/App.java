@@ -97,9 +97,10 @@ public class App {
             String token = ctx.cookie("session");
             int user_id = SESSIONS.get(token);
 
-            System.out.println(SESSIONS+" "+user_id);
 
             List<Content> content = cf.fetch(limit, offset, sortBy, ordering, user_id);
+
+            System.out.println(SESSIONS+" "+user_id);
 
             ctx.json(content.stream()
                     .map(img -> Map.of(

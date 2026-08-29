@@ -112,6 +112,7 @@ function getDate(datetime) {
 }
 
 function addContentToGallery(item) {
+    console.log(item);
     if (getDate(item.taken_at) != current_group_date) {
         if (current_group_date != null) { 
             refactorThumbnailRow();
