@@ -8,7 +8,7 @@ public class Utils {
     public static String hashSHA1(String input) {
         MessageDigest alg = null;
         try {
-            alg = MessageDigest.getInstance("SHA-1");
+            alg = MessageDigest.getInstance("SHA-3");
         } catch (NoSuchAlgorithmException ignored) {}
 
         byte[] hash = alg.digest(input.getBytes());
