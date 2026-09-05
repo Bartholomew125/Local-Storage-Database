@@ -78,6 +78,6 @@ public class ContentInputReader {
 
     private static String generateId(Path file, ContentMetaData metaData) throws NoSuchAlgorithmException, IOException {
         String input = file.getFileName().toString() + metaData.takenAt;
-        return Utils.hashSHA1(input);
+        return Utils.hashSHA256(input);
     }
 }

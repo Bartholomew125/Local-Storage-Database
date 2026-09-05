@@ -69,7 +69,7 @@ public class App {
         app.post("/api/login", ctx -> {
             String username = ctx.formParam("username");
             String password = ctx.formParam("password");
-            String password_hash = Utils.hashSHA1(password);
+            String password_hash = Utils.hashSHA256(password);
             Integer user_id = usersTable.getId(username, password_hash);
             if (user_id != null) {
                 String token = UUID.randomUUID().toString();
