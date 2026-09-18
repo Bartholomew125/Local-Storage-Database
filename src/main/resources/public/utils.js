@@ -112,7 +112,6 @@ function getDate(datetime) {
 }
 
 function addContentToGallery(item) {
-    console.log(item);
     if (getDate(item.taken_at) != current_group_date) {
         if (current_group_date != null) { 
             refactorThumbnailRow();
@@ -124,6 +123,7 @@ function addContentToGallery(item) {
         current_thumbnail_row = newThumbnailRow();
         current_thumbnail_row_container = newThumbnailRowContainer();
         current_thumbnail_row_container.appendChild(current_thumbnail_row);
+        GALLERY.appendChild(current_thumbnail_row_container);
     }
 
     const img_scaled_width = scaleWidth(item.width, item.height, MIN_THUMBNAIL_HEIGHT);
