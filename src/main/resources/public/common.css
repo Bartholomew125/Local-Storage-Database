@@ -251,6 +251,12 @@ button {
     margin-right: 20px;
 }
 
+/*
+ * =============================================================================
+ *                                  LIGHTBOX TAGS
+ * =============================================================================
+ */
+
 #lightbox-tags {
     position: relative;
     display: none;
@@ -274,19 +280,71 @@ button {
     border-radius: var(--border-radius);
 }
 
-#lightbox-addtag-popup {
-    position: absolute;
-    display: none;
-    background: black;
-    color: white;
-    z-index: 1000;
-}
-
 /*
  * =============================================================================
  *                                  LIGHTBOX TAGS
  * =============================================================================
  */
+
+.flex {
+    display: flex;
+}
+
+.flex-center {
+    justify-content: center;
+    align-items: center;
+}
+
+.top-center {
+    justify-content: center;
+    align-items: top;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column:
+}
+
+.overlay-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+}
+
+#addtag-popup {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: top;
+    background: var(--background-translucent);
+    backdrop-filter: var(--background-blur);
+    box-shadow: 0px 0px 10px 50px var(--background-translucent);
+    color: white;
+    z-index: 1000;
+    max-height: 50vh;
+    max-width: 50vh;
+}
+
+#tag-results {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: top;
+    overflow: auto;
+}
+
+.tag-result {
+    display: flex;
+    margin: 2px;
+    border: 1px solid white;
+}
+
+.input-field {
+
+}
+
 /* #lightbox-tags { */
 /*     display: flex; */
 /*     flex-wrap: wrap; */

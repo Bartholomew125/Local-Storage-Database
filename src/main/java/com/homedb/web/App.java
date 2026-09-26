@@ -235,7 +235,7 @@ public class App {
         });
 
         app.get("/api/tags", ctx -> {
-            String q = ctx.queryParamAsClass("q", String.class).getOrDefault("");
+            String q = ctx.queryParamAsClass("query", String.class).getOrDefault("");
             List<Tag> tags = tagsTable.search(q);
             ctx.json(tags.stream()
                 .map(tag -> Map.of(
@@ -243,6 +243,13 @@ public class App {
                     "name", tag.name()
                 )).toList()
             );
+        });
+
+        app.post("/api/tags", ctx -> {
+            String tagName = ctx.bodyAsClass(Map.class).get("tag").toString();
+            int res = tagsTable.insert(tagName);
+            assert res == 1;
+            ctx.status(200);
         });
 
         app.get("/api/tags/{id}", ctx -> {
@@ -262,10 +269,9 @@ public class App {
             int tag_id = tagsTable.getId(tagName);
             if (tag_id == -1) {
                 tagsTable.insert(tagName);
+                tag_id = tagsTable.getId(tagName);
             }
-            tag_id = tagsTable.getId(tagName);
-            if (tag_id == -1)
-                throw new RuntimeException("NOT SUPPOSE TO HAPPEN");
+            assert tag_id != -1;
             Tag tag = new Tag(tag_id, tagName);
             tagsTable.insert(tag, id);
             ctx.status(200);

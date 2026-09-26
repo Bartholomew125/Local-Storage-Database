@@ -9,6 +9,40 @@ window.addEventListener("DOMContentLoaded", () => {
     usericon.addEventListener("click", () => {
         window.location.href = "profile.html";
     });
+
+    const tag_search = document.getElementById("tag-search");
+    const tag_results = document.getElementById("tag-results");
+
+    tag_search.addEventListener("input", async () => {
+        tag_results.replaceChildren();
+        const input = tag_search.value;
+        if (input == "") {
+            return;
+        }
+        const res = await fetch(`/api/tags?query=${input}`);
+        const tags = await res.json();
+        var exact_match_found = false;
+        tags.forEach(tag => {
+            if (tag.name == input) {
+                exact_match_found = true;
+            }
+            const tag_result = document.createElement("button");
+            tag_result.addEventListener("click", () => addTagToContent(tag.name));
+            tag_result.innerHTML = tag.name;
+            tag_result.classList.add("tag-result", "tag");
+            tag_results.appendChild(tag_result);
+        });
+        if (!exact_match_found) {
+            const new_tag_result = document.createElement("button");
+            new_tag_result.innerHTML = "+"+input;
+            new_tag_result.classList.add("tag-result", "tag");
+            new_tag_result.addEventListener("click", async () => {
+                await createNewTag(input);
+                await addTagToContent(input);
+            })
+            tag_results.insertBefore(new_tag_result, tag_results.firstChild);
+        }
+    })
 });
 
 document.addEventListener("scroll", () => {
@@ -192,6 +226,7 @@ function initLightbox() {
     const lightbox_caption = document.getElementById("lightbox-caption");
     const lightbox_caption_title = document.getElementById("lightbox-caption-title");
     const lightbox_caption_date = document.getElementById("lightbox-caption-date");
+    const addtag_popup = document.getElementById("addtag-popup");
 
     function closeMenuPopup() {
         menu_popup.style.display = "none";
@@ -225,8 +260,13 @@ function initLightbox() {
 
     window.addEventListener("keydown", (e) => {
         if (e.key == "Escape") {
-            closeMenuPopup();
-            closeLightbox();
+            if (document.getElementById("addtag-popup").style.display != "none") {
+                closeAddTagPopup();
+            }
+            else {
+                closeMenuPopup();
+                closeLightbox();
+            }
         }
     });
 
@@ -243,7 +283,7 @@ function initLightbox() {
                     closeMenuPopup();
                     break;
                 case "add tags":
-                    addTag();
+                    toggleAddTagPopup();
                     break;
                 case "remove":
                     deleteContent(currentItem);
@@ -269,6 +309,7 @@ function initLightbox() {
         else {
             closeMenuPopup();
             closeLightbox();
+            closeAddTagPopup();
         }
     });
 }
@@ -353,14 +394,56 @@ function addTagToDisplay(tag) {
     tags.childNodes[i].append(display_tag);
 }
 
+async function reloadTags(item) {
+    document.getElementById("lightbox-tags").innerHTML = '';
+    await loadTags(item);
+}
+
 async function loadTags(item) {
     const res = await fetch(`/api/tags/${item.id}`);
     const tags = await res.json();
+    console.log(tags);
     tags.forEach(tag => {
         addTagToDisplay(tag);
     });
 }
 
+async function createNewTag(tagName) {
+    await fetch(`/api/tags`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tag: tagName })
+    });
+}
+
+async function addTagToContent(tagName) {
+    await fetch(`/api/tags/${currentItem.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tag: tagName })
+    });
+    reloadTags(currentItem);
+}
+
+function closeAddTagPopup() {
+    const addtag_popup = document.getElementById("addtag-popup");
+    addtag_popup.style.display = "none";
+}
+
+function openAddTagPopup() {
+    const addtag_popup = document.getElementById("addtag-popup");
+    addtag_popup.style.display = "flex";
+}
+
+function toggleAddTagPopup() {
+    const addtag_popup = document.getElementById("addtag-popup");
+    if (addtag_popup.style.display == "flex") {
+        addtag_popup.style.display = "none";
+    }
+    else {
+        addtag_popup.style.display = "flex";
+    }
+}
 
 /*
  * =============================================================================
@@ -428,70 +511,3 @@ function renameContent(item) {
     }
     title_elem.addEventListener("keydown", onKey);
 }
-
-function addTag() {
-    const addtag_popup = document.getElementById("lightbox-addtag-popup");
-    addtag_popup.style.display = "block";
-    addtag_popup.innerHTML = "HELLO LOL";
-}
-
-// function editContentTags(item) {
-//     const popup = document.getElementById("tag-popup");
-//     popup.style.display = popup.style.display === "none" ? "block" : "none";
-//     if (popup.style.display === "none") return;
-//
-//     const search = document.getElementById("tag-search");
-//     search.value = "";
-//     search.oninput = null; // remove old handler
-//     search.replaceWith(search.cloneNode(true)); // remove old keydown listeners
-//     const freshSearch = document.getElementById("tag-search");
-//
-//     freshSearch.focus();
-//     renderTagResults("", item);
-//
-//     freshSearch.oninput = () => renderTagResults(freshSearch.value.trim(), item);
-//     // freshSearch.addEventListener("keydown", async (e) => {
-//     //     if (e.key === "Enter" && freshSearch.value.trim()) {
-//     //         await addTag(item, freshSearch.value.trim());
-//     //         freshSearch.value = "";
-//     //         await renderTagResults("", item);
-//     //     }
-//     // });
-// }
-
-// async function renderTagResults(likeName, item) {
-//     if (likeName === "") {
-//         return;
-//     }
-//     const res = await fetch(`/api/tags?q=${encodeURIComponent(likeName)}`);
-//     const tags = await res.json();
-//     const container = document.getElementById("tag-results");
-//     container.innerHTML = "";
-//
-//     tags.forEach(tag => {
-//         const btn = document.createElement("button");
-//         btn.className = "tag-result";
-//         btn.textContent = tag.name;
-//         btn.onclick = () => addTag(item, tag.name);
-//         container.appendChild(btn);
-//     });
-//
-//     if (likeName && !tags.find(t => t.name === likeName)) {
-//         const btn = document.createElement("button");
-//         btn.className = "tag-result";
-//         btn.textContent = `+ Create "${likeName}"`;
-//         btn.onclick = () => addTag(item, likeName);
-//         container.appendChild(btn);
-//     }
-// }
-
-// async function addTag(item, tagName) {
-//     await fetch(`/api/tags/${item.id}`, {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify({ tag: tagName })
-//     });
-//     document.getElementById("tag-popup").style.display = "none";
-//     await loadTags(item);
-// }
-//
