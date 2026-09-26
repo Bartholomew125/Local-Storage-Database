@@ -1,21 +1,18 @@
 let page = 0;
 let loading = false;
-const NUM_COLUMNS = window.innerWidth/400;
-const columns = [];
-const column_heights = [];
 
 const TAG_HEIGHT = 20;
 const TAG_MARGIN = 2;
 
-window.addEventListener("DOMContentLoaded", (event) => {
+window.addEventListener("DOMContentLoaded", () => {
     const usericon = document.getElementById("usericon");
-    usericon.addEventListener("click", (event) => {
-        window.location.href = "login.html";
+    usericon.addEventListener("click", () => {
+        window.location.href = "profile.html";
     });
 });
 
-window.addEventListener("scroll", () => {
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+document.addEventListener("scroll", () => {
+    if (document.getElementById("gallery").offsetHeight <= (window.innerHeight + window.scrollY)) {
         loadContent();
     }
 });
@@ -33,15 +30,6 @@ window.addEventListener("scroll", () => {
  *                                 GALLERY 
  * =============================================================================
  */
-
-const pageObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            pageObserver.unobserve(entry.target);
-            loadContent();
-        }
-    });
-}, { rootMargin: "0px 0px 500px 0px" });  // fire 500px before it enters the viewport
 
 var GALLERY = null;
 function initGallery() {
@@ -176,13 +164,15 @@ async function loadContent() {
 
     content.forEach( (c, i) => {
         const cc = addContentToGallery(c);
-        if (i === content.length - 1) {
-            pageObserver.observe(cc);
-        }
     });
+
 
     page++;
     loading = false;
+
+    if (document.getElementById("gallery").offsetHeight <= (window.innerHeight + window.scrollY)) {
+        loadContent();
+    }
 }
 
 /*
