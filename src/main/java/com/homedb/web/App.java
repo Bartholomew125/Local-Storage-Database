@@ -100,8 +100,6 @@ public class App {
 
             List<Content> content = cf.fetch(limit, offset, sortBy, ordering, user_id);
 
-            System.out.println(SESSIONS+" "+user_id);
-
             ctx.json(content.stream()
                     .map(img -> Map.of(
                         "id",       img.getId(),
