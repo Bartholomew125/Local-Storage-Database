@@ -403,7 +403,7 @@ async function reloadTags(item) {
 async function loadTags(item) {
     const res = await fetch(`/api/tags/${item.id}`);
     const tags = await res.json();
-    console.log(tags);
+    tags.sort((a,b) => a.name.localeCompare(b.name))
     tags.forEach(tag => {
         addTagToDisplay(tag);
     });
