@@ -289,6 +289,7 @@ function initLightbox() {
                     deleteContent(currentItem);
                     closeMenuPopup();
                     closeLightbox();
+                    window.location.reload();
                     break;
                 case "toggle tags":
                     toggleTagsBar();
@@ -455,11 +456,9 @@ function deleteContent(item) {
     console.log(item);
     if (item.type === "image") {
         fetch(`/api/images/${item.id}/delete`);
-        item.element.remove();
     }
     else if (item.type === "video") {
         fetch(`/api/videos/${item.id}/delete`);
-        item.element.remove();
     }
     else {
         console.log("Unknown type of content to delete.");
