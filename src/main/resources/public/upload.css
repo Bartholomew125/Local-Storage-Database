@@ -1,0 +1,18 @@
+#preview {
+    display: flex;
+    flex-direction: column;
+    align-items: top;
+    justify-items: left;
+}
+
+.preview-item {
+    display: flex;
+    max-width: 80vh;
+    max-height: 80vh;
+    border: 5px solid purple;
+    margin: 10px;
+}
+
+.preview-item img {
+    width: 100%;
+}

@@ -1,5 +1,7 @@
 package com.homedb.web;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -26,6 +28,7 @@ import com.homedb.database.VideosTable;
 
 import io.javalin.Javalin;
 import io.javalin.http.UnauthorizedResponse;
+import io.javalin.http.UploadedFile;
 
 public class App {
 
@@ -151,6 +154,15 @@ public class App {
             ImageContent image = imagesTable.select(imageid);
             if (image != null) {
                 ctx.result(image.readFile());
+            }
+        });
+
+        app.post("api/images", ctx -> {
+            UploadedFile file = ctx.uploadedFile("file");
+            if (file != null) {
+                InputStream inputStream = file.content();
+                String filename = file.filename();
+                Files.copy(inputStream, Path.of("uploads/"+filename));
             }
         });
         
