@@ -398,13 +398,24 @@ function toggleAddTagPopup() {
  * =============================================================================
  */
 
+function removeMediaTryContainer(elem) {
+    const content_con = elem.parentElement;
+    const date_con = content_con.parentElement;
+    elem.remove();
+    if (content_con.children.length == 0) {
+        date_con.remove();
+    }
+}
+
 function deleteContent(item) {
     console.log(item);
     if (item.type === "image") {
         fetch(`/api/images/${item.id}/delete`);
+        removeMediaTryContainer(item.element);
     }
     else if (item.type === "video") {
         fetch(`/api/videos/${item.id}/delete`);
+        removeMediaTryContainer(item.element);
     }
     else {
         console.log("Unknown type of content to delete.");
