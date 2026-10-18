@@ -1,6 +1,9 @@
 package com.homedb.web;
 
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -282,6 +285,19 @@ public class App {
             int tagId = Integer.valueOf(ctx.pathParam("tagId"));
             tagsTable.delete(itemId, tagId);
             ctx.status(200);
+        });
+
+        app.get("/proxy/printer/{*path}", ctx -> {
+            String path = ctx.pathParam("path");
+            String query = ctx.queryString() != null ? "?" + ctx.queryString() : "";
+
+            HttpURLConnection conn = (HttpURLConnection) 
+                new URI("http://192.168.1.202/" + path + query).toURL().openConnection();
+            conn.setRequestMethod(ctx.method().name());
+
+            ctx.status(conn.getResponseCode());
+            ctx.contentType(conn.getContentType() != null ? conn.getContentType() : "text/html");
+            ctx.result(conn.getInputStream());
         });
     }
 }
