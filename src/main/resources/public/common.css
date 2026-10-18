@@ -114,7 +114,7 @@ button {
 }
 
 .date {
-    font-size: 3em;
+    font-size: 2em;
     color: white;
     font-family: sans-serif;
 }
@@ -145,7 +145,7 @@ button {
 
 @media screen and (width <= 70rem) {
     .date {
-        font-size: 2em;
+        font-size: 1em;
     }
 
     .content-container .media-item {
@@ -188,7 +188,7 @@ button {
     text-align: center;
 }
 
-.lightbox {
+#lightbox {
     position: fixed;
     inset: 0;
     backdrop-filter: var(--background-blur);
@@ -198,7 +198,7 @@ button {
     z-index: 1000;
 }
 
-.lightbox-contents {
+#lightbox-contents {
     position: relative;
     display: flex;
     align-items: center;

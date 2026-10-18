@@ -76,7 +76,7 @@ function initGallery() {
 
 function newContainer(date) {
     const date_con = document.createElement("div");
-    const date_elem = document.createElement("h1");
+    const date_elem = document.createElement("div");
     const content_con = document.createElement("div");
     content_con.className = "content-container";
     date_con.className = "date-container";
