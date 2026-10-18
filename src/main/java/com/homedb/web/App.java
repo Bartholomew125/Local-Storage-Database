@@ -287,14 +287,14 @@ public class App {
             ctx.status(200);
         });
 
-        app.get("/proxy/printer/{*path}", ctx -> {
-            String path = ctx.pathParam("path");
+        app.get("/proxy/printer/*", ctx -> {
+            String path = ctx.path().replaceFirst("^/proxy/printer/?", "");
             String query = ctx.queryString() != null ? "?" + ctx.queryString() : "";
-
-            HttpURLConnection conn = (HttpURLConnection) 
+            
+            HttpURLConnection conn = (HttpURLConnection)
                 new URI("http://192.168.1.202/" + path + query).toURL().openConnection();
             conn.setRequestMethod(ctx.method().name());
-
+            
             ctx.status(conn.getResponseCode());
             ctx.contentType(conn.getContentType() != null ? conn.getContentType() : "text/html");
             ctx.result(conn.getInputStream());
